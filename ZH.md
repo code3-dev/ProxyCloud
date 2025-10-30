@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/base.jpg" alt="代理云截图"/>
+  <img src="screenshots/base.jpg" alt="代理云截图" width="300"/>
 </p>
 
 <div align="center">
@@ -66,20 +66,20 @@
 | x86_64      | <a href="https://github.com/code3-dev/ProxyCloud/releases/latest/download/proxycloud-x86_64.apk"><img src="https://img.shields.io/badge/Android-x86_64-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android x86_64"></a> |
 
 #### Windows
-- [📦 Windows Installer (.exe)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-win-x64.exe)
-- [💼 Windows Portable (.exe)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-win-portable.exe)
+- [📦 Windows Installer (.exe)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [💼 Windows Portable (.exe)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
 
 #### macOS
-- [🍎 macOS Intel (x64) (.dmg)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-mac-x64.dmg)
-- [🍎 macOS Apple Silicon (arm64) (.dmg)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-mac-arm64.dmg)
-- [📦 macOS Intel (x64) (.zip)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-mac-x64.zip)
-- [📦 macOS Apple Silicon (arm64) (.zip)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-mac-arm64.zip)
+- [🍎 macOS Intel (x64) (.dmg)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [🍎 macOS Apple Silicon (arm64) (.dmg)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [📦 macOS Intel (x64) (.zip)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [📦 macOS Apple Silicon (arm64) (.zip)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
 
 #### Linux
-- [🐧 Linux (.deb)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-linux-amd64.deb)
-- [🐧 Linux (.rpm)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-linux-x86_64.rpm)
-- [🐧 Linux (.AppImage)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-linux-x86_64.AppImage)
-- [🐧 Linux (.tar.gz)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest/download/proxycloud-gui-linux-x64.tar.gz)
+- [🐧 Linux (.deb)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [🐧 Linux (.rpm)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [🐧 Linux (.AppImage)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
+- [🐧 Linux (.tar.gz)](https://github.com/code3-dev/ProxyCloud-GUI/releases/latest)
 
 #### Arch Linux
 
