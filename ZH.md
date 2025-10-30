@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/base.jpg" alt="代理云截图" width="300"/>
+  <img src="screenshots/base.jpg" alt="代理云截图"/>
 </p>
 
 <div align="center">
