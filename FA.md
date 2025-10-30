@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/base.jpg" alt="تصویر صفحه ابر پروکسی" width="300"/>
+  <img src="screenshots/base.jpg" alt="تصویر صفحه ابر پروکسی"/>
 </p>
 
 <div align="center">
