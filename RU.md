@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="screenshots/base.jpg" alt="Скриншот Proxy Cloud" width="300"/>
+  <img src="screenshots/base.jpg" alt="Скриншот Proxy Cloud"/>
 </p>
 
 <div align="center">
