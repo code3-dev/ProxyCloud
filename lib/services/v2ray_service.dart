@@ -106,6 +106,7 @@ class V2RayService extends ChangeNotifier {
                 'packageName': app['packageName'] as String,
                 'name': app['name'] as String,
                 'isSystemApp': app['isSystemApp'] as bool,
+                'icon': app['icon'] as String, // Add icon field
               },
             )
             .toList();
@@ -506,7 +507,10 @@ class V2RayService extends ChangeNotifier {
   }
 
   // Get server delay/ping for a specific config using V2Ray's built-in method
-  Future<int?> getServerDelay(V2RayConfig config, {AutoSelectCancellationToken? cancellationToken}) async {
+  Future<int?> getServerDelay(
+    V2RayConfig config, {
+    AutoSelectCancellationToken? cancellationToken,
+  }) async {
     final configId = config.id;
     final hostKey = '${config.address}:${config.port}';
 

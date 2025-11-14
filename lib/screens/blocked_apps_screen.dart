@@ -6,6 +6,8 @@ import '../services/v2ray_service.dart';
 import '../utils/app_localizations.dart';
 import '../providers/language_provider.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class BlockedAppsScreen extends StatefulWidget {
   const BlockedAppsScreen({super.key});
@@ -18,11 +20,13 @@ class AppInfo {
   final String packageName;
   final String name;
   final bool isSystemApp;
+  final String icon; // Base64 encoded icon
 
   AppInfo({
     required this.packageName,
     required this.name,
     required this.isSystemApp,
+    required this.icon,
   });
 }
 
@@ -66,7 +70,7 @@ class _BlockedAppsScreenState extends State<BlockedAppsScreen> {
     // Load saved blocked apps first (fast operation)
     final prefs = await SharedPreferences.getInstance();
     final savedBlockedApps = prefs.getStringList('blocked_apps') ?? [];
-    
+
     setState(() {
       _selectedApps = savedBlockedApps;
       _isLoading = true; // Show loading for app list
@@ -91,6 +95,7 @@ class _BlockedAppsScreenState extends State<BlockedAppsScreen> {
                   context.tr(TranslationKeys.blockedAppsUnknownApp),
               packageName: appMap['packageName'] ?? '',
               isSystemApp: appMap['isSystemApp'] ?? false,
+              icon: appMap['icon'] ?? '', // Add icon data
             ),
           );
         }
@@ -222,11 +227,10 @@ class _BlockedAppsScreenState extends State<BlockedAppsScreen> {
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   Text(
-                    context.tr(TranslationKeys.commonLoadingApps), // Use translated text
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                    context.tr(
+                      TranslationKeys.commonLoadingApps,
+                    ), // Use translated text
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ],
               ),
@@ -289,17 +293,7 @@ class _BlockedAppsScreenState extends State<BlockedAppsScreen> {
                                 alpha: 0.8,
                               ),
                               child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: app.isSystemApp
-                                      ? Colors.blueGrey
-                                      : AppTheme.connectedGreen,
-                                  child: Text(
-                                    app.name.isNotEmpty
-                                        ? app.name[0].toUpperCase()
-                                        : '?',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
+                                leading: _buildAppIcon(app),
                                 title: Text(
                                   app.name,
                                   style: const TextStyle(color: Colors.white),
@@ -343,5 +337,37 @@ class _BlockedAppsScreenState extends State<BlockedAppsScreen> {
               ],
             ),
     );
+  }
+
+  Widget _buildAppIcon(AppInfo app) {
+    if (app.icon.isNotEmpty) {
+      try {
+        // Decode base64 string to image
+        Uint8List bytes = base64Decode(app.icon);
+        return CircleAvatar(radius: 20, backgroundImage: MemoryImage(bytes));
+      } catch (e) {
+        // If there's an error decoding the icon, fall back to text avatar
+        return CircleAvatar(
+          backgroundColor: app.isSystemApp
+              ? Colors.blueGrey
+              : AppTheme.connectedGreen,
+          child: Text(
+            app.name.isNotEmpty ? app.name[0].toUpperCase() : '?',
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        );
+      }
+    } else {
+      // Fall back to text avatar if no icon data
+      return CircleAvatar(
+        backgroundColor: app.isSystemApp
+            ? Colors.blueGrey
+            : AppTheme.connectedGreen,
+        child: Text(
+          app.name.isNotEmpty ? app.name[0].toUpperCase() : '?',
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+        ),
+      );
+    }
   }
 }

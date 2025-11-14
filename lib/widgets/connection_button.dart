@@ -161,15 +161,23 @@ class _ConnectionButtonState extends State<ConnectionButton> {
         // Show loading state while initializing
         if (provider.isInitializing) {
           return Container(
-            width: 160,
-            height: 160,
+            width: 180,
+            height: 180,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppTheme.cardDark,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
             ),
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryBlue),
+                strokeWidth: 4,
               ),
             ),
           );
@@ -178,6 +186,7 @@ class _ConnectionButtonState extends State<ConnectionButton> {
         final isConnected = provider.activeConfig != null;
         final isConnecting = provider.isConnecting;
         final selectedConfig = provider.selectedConfig;
+        final hasConfigs = provider.configs.isNotEmpty;
 
         return GestureDetector(
           onTap: () async {
@@ -194,7 +203,7 @@ class _ConnectionButtonState extends State<ConnectionButton> {
                   selectedConfig,
                   provider.isProxyMode,
                 );
-              } else if (provider.configs.isNotEmpty) {
+              } else if (hasConfigs) {
                 // No server selected, run auto-select and then connect
                 await _runAutoSelectAndConnect(context, provider);
               } else {
@@ -205,6 +214,10 @@ class _ConnectionButtonState extends State<ConnectionButton> {
                       context.tr(TranslationKeys.serverSelectorNoServers),
                     ),
                     backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 );
               }
@@ -216,13 +229,17 @@ class _ConnectionButtonState extends State<ConnectionButton> {
                     '${context.tr('home.connection_failed')}: ${e.toString()}',
                   ),
                   backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               );
             }
           },
           child: Container(
-            width: 160,
-            height: 160,
+            width: 180,
+            height: 180,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
@@ -230,63 +247,80 @@ class _ConnectionButtonState extends State<ConnectionButton> {
                   color: _getButtonColor(
                     isConnected,
                     isConnecting,
-                  ).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  spreadRadius: 5,
+                  ).withValues(alpha: 0.4),
+                  blurRadius: 25,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Outer animated ring (only visible when connecting)
+                // Pulsing background ring (only visible when connecting)
                 if (isConnecting)
                   Container(
-                        width: 160,
-                        height: 160,
+                        width: 190,
+                        height: 190,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppTheme.connectingBlue,
+                            color: _getButtonColor(
+                              isConnected,
+                              isConnecting,
+                            ).withValues(alpha: 0.3),
+                            width: 4,
+                          ),
+                        ),
+                      )
+                      .animate(
+                        onPlay: (controller) =>
+                            controller.repeat(reverse: true),
+                      )
+                      .scaleXY(end: 1.2, duration: 1000.ms),
+
+                // Outer animated ring (only visible when connecting)
+                if (isConnecting)
+                  Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _getButtonColor(isConnected, isConnecting),
                             width: 3,
                           ),
                         ),
                       )
                       .animate(onPlay: (controller) => controller.repeat())
-                      .scale(
-                        duration: 1500.ms,
-                        begin: const Offset(0.9, 0.9),
-                        end: const Offset(1.1, 1.1),
-                      )
-                      .then()
-                      .scale(
-                        duration: 1500.ms,
-                        begin: const Offset(1.1, 1.1),
-                        end: const Offset(0.9, 0.9),
-                      ),
+                      .rotate(duration: 2000.ms, begin: 0, end: 1),
 
                 // Middle ring
                 if (isConnecting)
                   Container(
-                        width: 130,
-                        height: 130,
+                        width: 150,
+                        height: 150,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppTheme.connectingBlue.withValues(
-                              alpha: 0.7,
-                            ),
+                            color: _getButtonColor(
+                              isConnected,
+                              isConnecting,
+                            ).withValues(alpha: 0.7),
                             width: 2,
                           ),
                         ),
                       )
-                      .animate(onPlay: (controller) => controller.repeat())
-                      .rotate(duration: 3000.ms, begin: 0, end: 1),
+                      .animate(
+                        onPlay: (controller) =>
+                            controller.repeat(reverse: true),
+                      )
+                      .scaleXY(end: 1.1, duration: 1500.ms),
 
-                // Main button
+                // Main button with enhanced design
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 140,
+                  height: 140,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -294,13 +328,72 @@ class _ConnectionButtonState extends State<ConnectionButton> {
                       end: Alignment.bottomRight,
                       colors: _getGradientColors(isConnected, isConnecting),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getButtonColor(
+                          isConnected,
+                          isConnecting,
+                        ).withValues(alpha: 0.5),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                  child: Center(
-                    child: Icon(
-                      _getButtonIcon(isConnected, isConnecting),
-                      color: Colors.white,
-                      size: 50,
-                    ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Inner glow effect
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.2),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Icon with label
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _getButtonIcon(isConnected, isConnecting),
+                            color: Colors.white,
+                            size: 50,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getButtonText(
+                              isConnected,
+                              isConnecting,
+                              hasConfigs,
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+
+                      // Progress indicator when connecting
+                      if (isConnecting)
+                        Positioned.fill(
+                          child: CircularProgressIndicator(
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                            strokeWidth: 3,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
@@ -336,7 +429,14 @@ class _ConnectionButtonState extends State<ConnectionButton> {
   }
 
   IconData _getButtonIcon(bool isConnected, bool isConnecting) {
-    if (isConnecting) return Icons.hourglass_top;
-    return isConnected ? Icons.power_settings_new : Icons.power_settings_new;
+    if (isConnecting) return Icons.sync;
+    return isConnected ? Icons.power_off : Icons.power_settings_new;
+  }
+
+  String _getButtonText(bool isConnected, bool isConnecting, bool hasConfigs) {
+    if (isConnecting) return 'Connecting...';
+    if (isConnected) return 'Disconnect';
+    if (hasConfigs) return 'Connect';
+    return 'No Servers';
   }
 }

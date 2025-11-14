@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +40,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   final V2RayService _v2rayService = V2RayService();
   final StreamController<String> _autoConnectStatusStream =
       StreamController<String>.broadcast();
+  List<V2RayConfig> _originalOrder = []; // Store original order
 
   /// Get ping batch size from shared preferences
   Future<int> _getPingBatchSize() async {
@@ -54,6 +55,77 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
     } catch (e) {
       debugPrint('Error getting ping batch size: $e');
       return 5; // Default value
+    }
+  }
+
+  /// Save ping results to shared preferences
+  Future<void> _savePingsToStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final Map<String, dynamic> pingData = {};
+
+      // Save ping results with timestamp
+      for (final entry in _pings.entries) {
+        if (entry.value != null) {
+          pingData[entry.key] = {
+            'ping': entry.value,
+            'timestamp': DateTime.now().millisecondsSinceEpoch,
+          };
+        }
+      }
+
+      // Convert to JSON string for storage
+      final jsonString = jsonEncode(pingData);
+      await prefs.setString('saved_pings', jsonString);
+      debugPrint('Saved ${_pings.length} ping results to storage');
+    } catch (e) {
+      debugPrint('Error saving pings to storage: $e');
+    }
+  }
+
+  /// Load ping results from shared preferences
+  Future<void> _loadPingsFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('saved_pings');
+
+      if (jsonString != null && jsonString.isNotEmpty) {
+        final Map<String, dynamic> pingData = jsonDecode(jsonString);
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final oneHourInMillis = 60 * 60 * 1000; // 1 hour
+
+        // Clear current pings
+        _pings.clear();
+
+        // Load valid ping results (less than 1 hour old)
+        for (final entry in pingData.entries) {
+          final pingInfo = entry.value as Map<String, dynamic>;
+          final timestamp = pingInfo['timestamp'] as int;
+
+          // Only load pings that are less than 1 hour old
+          if (now - timestamp < oneHourInMillis) {
+            _pings[entry.key] = pingInfo['ping'] as int?;
+          }
+        }
+
+        debugPrint('Loaded ${_pings.length} ping results from storage');
+        if (mounted) {
+          setState(() {});
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading pings from storage: $e');
+    }
+  }
+
+  /// Clear all saved pings from storage
+  Future<void> _clearSavedPings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('saved_pings');
+      debugPrint('Cleared saved pings from storage');
+    } catch (e) {
+      debugPrint('Error clearing saved pings: $e');
     }
   }
 
@@ -192,6 +264,8 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   void initState() {
     super.initState();
     _selectedFilter = 'All';
+    // Load saved pings when screen initializes
+    _loadPingsFromStorage();
   }
 
   @override
@@ -259,6 +333,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
             _loadingPings[relatedConfig.id] = false;
           }
         });
+
+        // Save pings to storage after each ping operation
+        await _savePingsToStorage();
       }
     } catch (e) {
       debugPrint(
@@ -272,6 +349,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
             _loadingPings[relatedConfig.id] = false;
           }
         });
+
+        // Save pings to storage after each ping operation
+        await _savePingsToStorage();
       }
     }
   }
@@ -370,6 +450,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
           await Future.delayed(const Duration(milliseconds: 100));
         }
       }
+
+      // Save all pings to storage after completing all batches
+      await _savePingsToStorage();
     } catch (e) {
       debugPrint('Error in ping all operation: $e');
       if (mounted) {
@@ -531,6 +614,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
           }
         }
       }
+
+      // Save pings after auto-select operation
+      await _savePingsToStorage();
     } catch (e) {
       debugPrint('Error in auto-connect algorithm: $e');
       if (mounted) {
@@ -635,6 +721,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
           await Future.delayed(const Duration(milliseconds: 100));
         }
       }
+
+      // Save all pings to storage after completing all batches
+      await _savePingsToStorage();
     } catch (e) {
       debugPrint('Error in ping all operation: $e');
       if (mounted) {
@@ -696,17 +785,25 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       // Sort button
       IconButton(
         icon: Icon(
-          _sortByPing ? Icons.sort : Icons.sort_outlined,
+          _sortByPing
+              ? (_sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
+              : Icons.sort,
           color: _sortByPing ? AppTheme.primaryGreen : null,
         ),
         tooltip: context.tr(TranslationKeys.serverSelectionSortByPing),
         onPressed: () {
           setState(() {
-            if (_sortByPing) {
-              _sortAscending = !_sortAscending;
-            } else {
+            if (!_sortByPing) {
+              // Not sorted -> sort ascending
               _sortByPing = true;
               _sortAscending = true;
+            } else if (_sortAscending) {
+              // Ascending -> descending
+              _sortAscending = false;
+            } else {
+              // Descending -> unsorted
+              _sortByPing = false;
+              _sortAscending = true; // Reset to default for next sort
             }
           });
         },
@@ -738,6 +835,11 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       filteredConfigs = configs
           .where((config) => subscription.configIds.contains(config.id))
           .toList();
+    }
+
+    // Store original order when not sorting
+    if (!_sortByPing) {
+      _originalOrder = List.from(filteredConfigs);
     }
 
     // Sort configs by ping if enabled
@@ -796,6 +898,13 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                       duration: const Duration(seconds: 1),
                     ),
                   );
+
+                  // Clear saved pings when updating subscriptions
+                  await _clearSavedPings();
+                  _pings.clear();
+                  if (mounted) {
+                    setState(() {});
+                  }
 
                   if (_selectedFilter == 'All') {
                     await provider.updateAllSubscriptions();

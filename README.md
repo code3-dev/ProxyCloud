@@ -191,7 +191,7 @@ If you encounter any issues or have questions, please open an issue on our GitHu
 
 - [Flutter](https://flutter.dev/) - UI toolkit for building natively compiled applications
 - [Xray Core](https://github.com/XTLS/Xray-core) - A platform for building proxies to bypass network restrictions
-- [AndroidLibXrayLite](https://github.com/2dust/AndroidLibXrayLite) - Android library for Xray core
+- [AndroidLibV2rayLite](https://github.com/2dust/AndroidLibV2rayLite) - Android library for Xray core
 - [Provider](https://pub.dev/packages/provider) - State management solution
 - All contributors who have helped shape this project
 

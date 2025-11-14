@@ -182,7 +182,7 @@ yay -S proxycloud-gui-bin
 
 - [Flutter](https://flutter.dev/) - UI-инструментарий для создания нативно компилируемых приложений
 - [Xray Core](https://github.com/XTLS/Xray-core) - Платформа для создания прокси для обхода сетевых ограничений
-- [AndroidLibXrayLite](https://github.com/2dust/AndroidLibXrayLite) - Android библиотека для ядра Xray
+- [AndroidLibV2rayLite](https://github.com/2dust/AndroidLibV2rayLite) - Android библиотека для ядра Xray
 - [Provider](https://pub.dev/packages/provider) - Решение для управления состоянием
 - Всем участникам, которые помогли сформировать этот проект
 

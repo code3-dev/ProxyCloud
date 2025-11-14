@@ -26,7 +26,11 @@ class ServerSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildServerSelector(BuildContext context, V2RayProvider provider, WallpaperService wallpaperService) {
+  Widget _buildServerSelector(
+    BuildContext context,
+    V2RayProvider provider,
+    WallpaperService wallpaperService,
+  ) {
     final selectedConfig = provider.selectedConfig;
     final configs = provider.configs;
     final isConnecting = provider.isConnecting;
@@ -44,7 +48,9 @@ class ServerSelector extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isGlassBackground ? AppTheme.surfaceCard.withOpacity(0.7) : AppTheme.cardDark,
+      color: isGlassBackground
+          ? AppTheme.surfaceCard.withOpacity(0.7)
+          : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -112,7 +118,9 @@ class ServerSelector extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isGlassBackground ? AppTheme.surfaceContainer.withOpacity(0.7) : AppTheme.surfaceContainer,
+                  color: isGlassBackground
+                      ? AppTheme.surfaceContainer.withOpacity(0.7)
+                      : AppTheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.surfaceCard),
                 ),
@@ -186,7 +194,7 @@ class ServerSelector extends StatelessWidget {
 
 class _LoadingServerCard extends StatelessWidget {
   final bool isGlassBackground;
-  
+
   const _LoadingServerCard({required this.isGlassBackground});
 
   @override
@@ -194,7 +202,9 @@ class _LoadingServerCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isGlassBackground ? AppTheme.surfaceCard.withOpacity(0.7) : AppTheme.cardDark,
+      color: isGlassBackground
+          ? AppTheme.surfaceCard.withOpacity(0.7)
+          : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
@@ -214,7 +224,7 @@ class _LoadingServerCard extends StatelessWidget {
 
 class _EmptyServerCard extends StatelessWidget {
   final bool isGlassBackground;
-  
+
   const _EmptyServerCard({required this.isGlassBackground});
 
   @override
@@ -222,7 +232,9 @@ class _EmptyServerCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: isGlassBackground ? AppTheme.surfaceCard.withOpacity(0.7) : AppTheme.cardDark,
+      color: isGlassBackground
+          ? AppTheme.surfaceCard.withOpacity(0.7)
+          : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(

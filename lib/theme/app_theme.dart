@@ -10,7 +10,7 @@ class AppTheme {
   static const Color surfaceDarker = Color(0xFF0A0A0A); // Even darker surface
   static const Color surfaceContainer = Color(0xFF1E1E1E); // Container surface
   static const Color surfaceCard = Color(0xFF252525); // Card surface
-  
+
   // Status colors
   static const Color connectedGreen = Color(0xFF34A853); // Material Green 500
   static const Color disconnectedRed = Color(0xFFEA4335); // Material Red 500
@@ -95,9 +95,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: surfaceCard,
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -117,22 +115,22 @@ class AppTheme {
         thickness: 1,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return primaryBlue;
-            }
-            return textGrey;
-          },
-        ),
-        trackColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.selected)) {
-              return primaryBlue.withValues(alpha: 0.5);
-            }
-            return textGrey.withValues(alpha: 0.5);
-          },
-        ),
+        thumbColor: WidgetStateProperty.resolveWith<Color?>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.selected)) {
+            return primaryBlue;
+          }
+          return textGrey;
+        }),
+        trackColor: WidgetStateProperty.resolveWith<Color?>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.selected)) {
+            return primaryBlue.withValues(alpha: 0.5);
+          }
+          return textGrey.withValues(alpha: 0.5);
+        }),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: primaryBlue,

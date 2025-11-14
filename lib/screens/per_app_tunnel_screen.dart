@@ -4,6 +4,8 @@ import '../theme/app_theme.dart';
 import '../services/v2ray_service.dart';
 import 'package:flutter/foundation.dart';
 import '../utils/app_localizations.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class PerAppTunnelScreen extends StatefulWidget {
   const PerAppTunnelScreen({super.key});
@@ -16,11 +18,13 @@ class AppInfo {
   final String packageName;
   final String name;
   final bool isSystemApp;
+  final String icon; // Base64 encoded icon
 
   AppInfo({
     required this.packageName,
     required this.name,
     required this.isSystemApp,
+    required this.icon,
   });
 }
 
@@ -64,7 +68,7 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
     // Load saved blocked apps first (fast operation)
     final prefs = await SharedPreferences.getInstance();
     final savedBlockedApps = prefs.getStringList('blocked_apps') ?? [];
-    
+
     setState(() {
       _isLoading = true; // Show loading for app list
     });
@@ -85,6 +89,7 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
               name: appMap['name'] ?? context.tr('common.unknown'),
               packageName: appMap['packageName'] ?? '',
               isSystemApp: appMap['isSystemApp'] ?? false,
+              icon: appMap['icon'] ?? '', // Add icon data
             ),
           );
         }
@@ -212,37 +217,9 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    context.tr('common.loading_apps'), // Use translated text
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Info banner
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    context.tr('per_app_tunnel.info_banner'),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ),
                 // Search bar
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -252,22 +229,38 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: context.tr('per_app_tunnel.search_hint'),
-                      hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
+                      hintStyle: const TextStyle(color: Colors.white70),
                       prefixIcon: const Icon(
                         Icons.search,
                         color: Colors.white70,
                       ),
                       filled: true,
-                      fillColor: AppTheme.secondaryDark,
+                      fillColor: AppTheme.primaryDark.withValues(alpha: 0.5),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
                       ),
                     ),
                   ),
                 ),
+                // Info banner
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    context.tr('per_app_tunnel.info_banner'),
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ),
+                // App list
                 Expanded(
                   child: _filteredApps.isEmpty
                       ? Center(
@@ -288,6 +281,7 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
                               app.packageName,
                             );
                             return ListTile(
+                              leading: _buildAppIcon(app),
                               title: Text(
                                 app.name,
                                 style: const TextStyle(color: Colors.white),
@@ -329,5 +323,37 @@ class _PerAppTunnelScreenState extends State<PerAppTunnelScreen> {
               ],
             ),
     );
+  }
+
+  Widget _buildAppIcon(AppInfo app) {
+    if (app.icon.isNotEmpty) {
+      try {
+        // Decode base64 string to image
+        Uint8List bytes = base64Decode(app.icon);
+        return CircleAvatar(radius: 20, backgroundImage: MemoryImage(bytes));
+      } catch (e) {
+        // If there's an error decoding the icon, fall back to text avatar
+        return CircleAvatar(
+          backgroundColor: app.isSystemApp
+              ? Colors.blueGrey
+              : AppTheme.connectedGreen,
+          child: Text(
+            app.name.isNotEmpty ? app.name[0].toUpperCase() : '?',
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        );
+      }
+    } else {
+      // Fall back to text avatar if no icon data
+      return CircleAvatar(
+        backgroundColor: app.isSystemApp
+            ? Colors.blueGrey
+            : AppTheme.connectedGreen,
+        child: Text(
+          app.name.isNotEmpty ? app.name[0].toUpperCase() : '?',
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+        ),
+      );
+    }
   }
 }

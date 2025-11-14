@@ -91,193 +91,226 @@ class _ToolsScreenState extends State<ToolsScreen> {
             backgroundColor: AppTheme.primaryDark,
             appBar: AppBar(
               title: Text(context.tr(TranslationKeys.toolsTitle)),
-              backgroundColor: AppTheme.primaryDark,
+              backgroundColor: AppTheme.surfaceContainer,
               elevation: 0,
+              centerTitle: true,
             ),
-            body: ListView(
-              padding: const EdgeInsets.all(16.0),
-              children: [
-                if (_update != null) _buildUpdateCard(context, _update!),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsLanguageSettings),
-                  description: context.tr(
-                    TranslationKeys.toolsLanguageSettingsDesc,
+            body: CustomScrollView(
+              slivers: [
+                if (_update != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildUpdateCard(context, _update!),
+                    ),
                   ),
-                  icon: Icons.language,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LanguageSettingsScreen(),
+                SliverPadding(
+                  padding: const EdgeInsets.all(16.0),
+                  sliver: SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.2,
+                        ),
+                    delegate: SliverChildListDelegate([
+                      _buildToolCard(
+                        context,
+                        title: context.tr(
+                          TranslationKeys.toolsLanguageSettings,
+                        ),
+                        description: context.tr(
+                          TranslationKeys.toolsLanguageSettingsDesc,
+                        ),
+                        icon: Icons.language,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const LanguageSettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsSubscriptionManager),
-                  description: context.tr('tools.subscription_manager_desc'),
-                  icon: Icons.subscriptions,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const SubscriptionManagementScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(
+                          TranslationKeys.toolsSubscriptionManager,
+                        ),
+                        description: context.tr(
+                          'tools.subscription_manager_desc',
+                        ),
+                        icon: Icons.subscriptions,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SubscriptionManagementScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsIpInformation),
-                  description: context.tr('tools.ip_information_desc'),
-                  icon: Icons.public,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IpInfoScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsIpInformation),
+                        description: context.tr('tools.ip_information_desc'),
+                        icon: Icons.public,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const IpInfoScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsHostChecker),
-                  description: context.tr('tools.host_checker_desc'),
-                  icon: Icons.link,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HostCheckerScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsHostChecker),
+                        description: context.tr('tools.host_checker_desc'),
+                        icon: Icons.link,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HostCheckerScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsSpeedTest),
-                  description: context.tr('tools.speed_test_desc'),
-                  icon: Icons.speed,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SpeedtestScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsSpeedTest),
+                        description: context.tr('tools.speed_test_desc'),
+                        icon: Icons.speed,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SpeedtestScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsBlockedApps),
-                  description: context.tr('tools.blocked_apps_desc'),
-                  icon: Icons.block,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BlockedAppsScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsBlockedApps),
+                        description: context.tr('tools.blocked_apps_desc'),
+                        icon: Icons.block,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BlockedAppsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsPerAppTunnel),
-                  description: context.tr('tools.per_app_tunnel_desc'),
-                  icon: Icons.shield_moon,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PerAppTunnelScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsPerAppTunnel),
+                        description: context.tr('tools.per_app_tunnel_desc'),
+                        icon: Icons.shield_moon,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PerAppTunnelScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsHomeWallpaper),
-                  description: context.tr('tools.home_wallpaper_desc'),
-                  icon: Icons.wallpaper,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WallpaperSettingsScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsHomeWallpaper),
+                        description: context.tr('tools.home_wallpaper_desc'),
+                        icon: Icons.wallpaper,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const WallpaperSettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsWallpaperStore),
-                  description: context.tr('tools.wallpaper_store_desc'),
-                  icon: Icons.store,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const WallpaperStoreScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsWallpaperStore),
+                        description: context.tr('tools.wallpaper_store_desc'),
+                        icon: Icons.store,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const WallpaperStoreScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsVpnSettings),
-                  description: context.tr('tools.vpn_settings_desc'),
-                  icon: Icons.settings,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VpnSettingsScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsVpnSettings),
+                        description: context.tr('tools.vpn_settings_desc'),
+                        icon: Icons.settings,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const VpnSettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsBatteryBackground),
-                  description: context.tr('tools.battery_background_desc'),
-                  icon: Icons.battery_charging_full,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BatterySettingsScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(
+                          TranslationKeys.toolsBatteryBackground,
+                        ),
+                        description: context.tr(
+                          'tools.battery_background_desc',
+                        ),
+                        icon: Icons.battery_charging_full,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const BatterySettingsScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                _buildToolCard(
-                  context,
-                  title: context.tr(TranslationKeys.toolsBackupRestore),
-                  description: context.tr('tools.backup_restore_desc'),
-                  icon: Icons.backup,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BackupRestoreScreen(),
+                      _buildToolCard(
+                        context,
+                        title: context.tr(TranslationKeys.toolsBackupRestore),
+                        description: context.tr('tools.backup_restore_desc'),
+                        icon: Icons.backup,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const BackupRestoreScreen(),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                      _buildToolCard(
+                        context,
+                        title: context.tr('common.exit'),
+                        description: context.tr('common.exit_app'),
+                        icon: Icons.exit_to_app,
+                        onTap: _showExitConfirmation,
+                        isExitButton: true,
+                      ),
+                    ]),
+                  ),
                 ),
-                _buildToolCard(
-                  context,
-                  title: context.tr('common.exit'),
-                  description: context.tr('common.exit_app'),
-                  icon: Icons.exit_to_app,
-                  onTap: _showExitConfirmation,
-                  isExitButton: true,
-                ),
-                // Add more tools here in the future
               ],
             ),
           ),
@@ -298,63 +331,66 @@ class _ToolsScreenState extends State<ToolsScreen> {
     final backgroundColor = isExitButton
         ? Colors.red.withValues(alpha: 0.1)
         : AppTheme.primaryBlue.withValues(alpha: 0.1);
-    final borderColor =
-        isExitButton ? Colors.red.withValues(alpha: 0.3) : Colors.transparent;
+    final borderColor = isExitButton
+        ? Colors.red.withValues(alpha: 0.3)
+        : Colors.transparent;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
       color: AppTheme.cardDark,
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: borderColor,
-          width: isExitButton ? 1 : 0,
-        ),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor, width: isExitButton ? 1 : 0),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: backgroundColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: iconColor, size: 28),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isExitButton ? Colors.red : Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isExitButton ? Colors.redAccent : Colors.grey[400],
-                      ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconColor.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: iconColor,
-                size: 16,
+              const SizedBox(height: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isExitButton ? Colors.red : Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isExitButton ? Colors.redAccent : Colors.grey[400],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -428,7 +464,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 const Spacer(),
                 ElevatedButton(
                   onPressed: () => _launchUrl(update.url.trim()),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                  ),
                   child: Text(context.tr('tools.update_now')),
                 ),
               ],

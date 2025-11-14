@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
 import '../theme/app_theme.dart';
 import '../widgets/error_snackbar.dart';
-import '../utils/app_localizations.dart'; // Added import for translations
+import '../utils/app_localizations.dart';
 import '../providers/v2ray_provider.dart';
 
 // Constants for shared preferences keys

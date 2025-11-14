@@ -770,21 +770,30 @@ class TranslationKeys {
   static const String wallpaperSettingsDefaultBackground =
       'wallpaper_settings.default_background';
   static const String wallpaperSettingsInfo = 'wallpaper_settings.info';
-  static const String wallpaperSettingsVisitStore = 'wallpaper_settings.visit_store';
-  static const String wallpaperSettingsStoreButton = 'wallpaper_settings.store_button';
-  static const String wallpaperSettingsGlassBackground = 'wallpaper_settings.glass_background';
-  static const String wallpaperSettingsGlassBackgroundDesc = 'wallpaper_settings.glass_background_desc';
+  static const String wallpaperSettingsVisitStore =
+      'wallpaper_settings.visit_store';
+  static const String wallpaperSettingsStoreButton =
+      'wallpaper_settings.store_button';
+  static const String wallpaperSettingsGlassBackground =
+      'wallpaper_settings.glass_background';
+  static const String wallpaperSettingsGlassBackgroundDesc =
+      'wallpaper_settings.glass_background_desc';
 
   // Wallpaper Store Screen
   static const String wallpaperStoreTitle = 'wallpaper_store.title';
   static const String wallpaperStoreLoading = 'wallpaper_store.loading';
-  static const String wallpaperStoreErrorLoading = 'wallpaper_store.error_loading';
+  static const String wallpaperStoreErrorLoading =
+      'wallpaper_store.error_loading';
   static const String wallpaperStoreRetry = 'wallpaper_store.retry';
-  static const String wallpaperStoreNoWallpapers = 'wallpaper_store.no_wallpapers';
-  static const String wallpaperStoreSetAsWallpaper = 'wallpaper_store.set_as_wallpaper';
+  static const String wallpaperStoreNoWallpapers =
+      'wallpaper_store.no_wallpapers';
+  static const String wallpaperStoreSetAsWallpaper =
+      'wallpaper_store.set_as_wallpaper';
   static const String wallpaperStoreDownload = 'wallpaper_store.download';
-  static const String wallpaperStoreDownloadSuccess = 'wallpaper_store.download_success';
-  static const String wallpaperStoreDownloadError = 'wallpaper_store.download_error';
+  static const String wallpaperStoreDownloadSuccess =
+      'wallpaper_store.download_success';
+  static const String wallpaperStoreDownloadError =
+      'wallpaper_store.download_error';
   static const String wallpaperStoreSetSuccess = 'wallpaper_store.set_success';
 
   // VPN Settings Screen
@@ -805,7 +814,8 @@ class TranslationKeys {
   static const String vpnSettingsChangesEffect = 'vpn_settings.changes_effect';
   static const String vpnSettingsAboutBypass = 'vpn_settings.about_bypass';
   static const String vpnSettingsPingBatchSize = 'vpn_settings.ping_batch_size';
-  static const String vpnSettingsPingBatchSizeDesc = 'vpn_settings.ping_batch_size_desc';
+  static const String vpnSettingsPingBatchSizeDesc =
+      'vpn_settings.ping_batch_size_desc';
   static const String vpnSettingsAboutBypassDesc =
       'vpn_settings.about_bypass_desc';
   static const String vpnSettingsAboutBypassExample =
@@ -816,7 +826,8 @@ class TranslationKeys {
   // Proxy Mode translations
   static const String vpnSettingsProxyMode = 'vpn_settings.proxy_mode';
   static const String vpnSettingsProxyModeDesc = 'vpn_settings.proxy_mode_desc';
-  static const String vpnSettingsProxyInformation = 'vpn_settings.proxy_information';
+  static const String vpnSettingsProxyInformation =
+      'vpn_settings.proxy_information';
   static const String vpnSettingsSocksProxy = 'vpn_settings.socks_proxy';
   static const String vpnSettingsHttpProxy = 'vpn_settings.http_proxy';
   static const String vpnSettingsProxyNote = 'vpn_settings.proxy_note';

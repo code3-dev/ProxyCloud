@@ -56,7 +56,7 @@ Temporary Items
 *.icloud
 
 # Android ignores
-AndroidLibXrayLite/
+AndroidLibV2rayLite/
 **/local.properties
 **/.gradle/
 **/captures/

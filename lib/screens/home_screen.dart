@@ -300,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     tooltip: context.tr(TranslationKeys.homeRefresh),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.vpn_key),
+                    icon: const Icon(Icons.subscriptions),
                     onPressed: () {
                       Navigator.push(
                         context,
