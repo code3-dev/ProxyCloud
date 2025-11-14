@@ -112,7 +112,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 1.2,
+                          childAspectRatio: 0.9,
                         ),
                     delegate: SliverChildListDelegate([
                       _buildToolCard(
@@ -348,7 +348,8 @@ class _ToolsScreenState extends State<ToolsScreen> {
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -366,11 +367,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 child: Icon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(height: 8),
-              Expanded(
+              Flexible(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: isExitButton ? Colors.red : Colors.white,
                   ),
@@ -380,11 +381,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Expanded(
+              Flexible(
                 child: Text(
                   description,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 11,
                     color: isExitButton ? Colors.redAccent : Colors.grey[400],
                   ),
                   textAlign: TextAlign.center,
