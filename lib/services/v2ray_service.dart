@@ -1303,7 +1303,7 @@ class V2RayService extends ChangeNotifier {
           if (_connectedSeconds % 60 == 0) {
             await _saveUsageStats();
           }
-          
+
           // Notify listeners to update UI with new traffic data
           notifyListeners();
         } catch (e) {

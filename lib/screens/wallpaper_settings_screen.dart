@@ -338,7 +338,8 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
                                   const SizedBox(height: 8),
                                   Text(
                                     context.tr(
-                                      TranslationKeys.wallpaperSettingsFailedLoad,
+                                      TranslationKeys
+                                          .wallpaperSettingsFailedLoad,
                                     ),
                                     style: const TextStyle(color: Colors.grey),
                                   ),
@@ -552,7 +553,7 @@ class FullScreenWallpaperViewer extends StatelessWidget {
   final String imagePath;
 
   const FullScreenWallpaperViewer({Key? key, required this.imagePath})
-      : super(key: key);
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {

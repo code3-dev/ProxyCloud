@@ -1065,7 +1065,9 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
         await _v2rayService.saveConfigs(_configs);
         await _v2rayService.saveSubscriptions(_subscriptions);
 
-        print('Cleared ${subscriptionConfigIds.length} subscription configs for fresh update');
+        print(
+          'Cleared ${subscriptionConfigIds.length} subscription configs for fresh update',
+        );
       }
     } catch (e) {
       print('Error clearing subscription configs: $e');
