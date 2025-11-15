@@ -111,95 +111,82 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           textDirection: languageProvider.textDirection,
           child: Scaffold(
             body: IndexedStack(index: _currentIndex, children: _screens),
-            bottomNavigationBar: Container(
-              margin: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+            bottomNavigationBar: ClipRRect(
+              borderRadius: BorderRadius.circular(20.0),
+              child: BottomNavigationBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                backgroundColor: AppTheme.surfaceContainer,
+                elevation: 8,
+                selectedItemColor: AppTheme.primaryBlue,
+                unselectedItemColor: Colors.grey,
+                type: BottomNavigationBarType.fixed,
+                selectedFontSize: 12,
+                unselectedFontSize: 10,
+                iconSize: 24,
+                showSelectedLabels: true,
+                showUnselectedLabels: true,
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentIndex == 0
+                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            : Colors.transparent,
+                      ),
+                      child: const Icon(Icons.vpn_key_rounded),
+                    ),
+                    label: context.tr(TranslationKeys.navVpn),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentIndex == 1
+                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            : Colors.transparent,
+                      ),
+                      child: const Icon(Icons.telegram_rounded),
+                    ),
+                    label: context.tr(TranslationKeys.navProxy),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentIndex == 2
+                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            : Colors.transparent,
+                      ),
+                      child: const Icon(Icons.storefront_rounded),
+                    ),
+                    label: context.tr(TranslationKeys.navStore),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Container(
+                      padding: const EdgeInsets.all(4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentIndex == 3
+                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            : Colors.transparent,
+                      ),
+                      child: const Icon(Icons.handyman_rounded),
+                    ),
+                    label: context.tr(TranslationKeys.navTools),
                   ),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: BottomNavigationBar(
-                  currentIndex: _currentIndex,
-                  onTap: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  backgroundColor: AppTheme.surfaceContainer,
-                  elevation: 0,
-                  selectedItemColor: AppTheme.primaryBlue,
-                  unselectedItemColor: Colors.grey,
-                  type: BottomNavigationBarType.fixed,
-                  selectedFontSize: 12,
-                  unselectedFontSize: 10,
-                  iconSize: 24,
-                  showSelectedLabels: true,
-                  showUnselectedLabels: true,
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: Container(
-                        padding: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == 0
-                              ? AppTheme.primaryBlue.withOpacity(0.2)
-                              : Colors.transparent,
-                        ),
-                        child: const Icon(Icons.vpn_key_rounded),
-                      ),
-                      label: context.tr(TranslationKeys.navVpn),
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Container(
-                        padding: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == 1
-                              ? AppTheme.primaryBlue.withOpacity(0.2)
-                              : Colors.transparent,
-                        ),
-                        child: const Icon(Icons.telegram_rounded),
-                      ),
-                      label: context.tr(TranslationKeys.navProxy),
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Container(
-                        padding: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == 2
-                              ? AppTheme.primaryBlue.withOpacity(0.2)
-                              : Colors.transparent,
-                        ),
-                        child: const Icon(Icons.storefront_rounded),
-                      ),
-                      label: context.tr(TranslationKeys.navStore),
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Container(
-                        padding: const EdgeInsets.all(4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == 3
-                              ? AppTheme.primaryBlue.withOpacity(0.2)
-                              : Colors.transparent,
-                        ),
-                        child: const Icon(Icons.handyman_rounded),
-                      ),
-                      label: context.tr(TranslationKeys.navTools),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),

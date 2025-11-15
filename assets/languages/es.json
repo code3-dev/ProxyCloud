@@ -418,7 +418,7 @@
     "image_not_found": "Archivo de fondo no encontrado",
     "failed_load": "Error al cargar imagen",
     "default_background": "Fondo Gradiente Predeterminado",
-    "info": "• Las imágenes serán optimizadas y guardadas localmente\n• Soporta formatos JPG, PNG\n• El fondo aplica solo a la pantalla de inicio",
+    "info": "• Las imágenes y videos serán optimizados y guardados localmente\n• Soporta formatos JPG, PNG, GIF, MP4, WebM y MKV\n• El fondo aplica solo a la pantalla de inicio",
     "visit_store": "Visitar Tienda de Fondos",
     "store_button": "Tienda de Fondos",
     "glass_background": "Fondo de Vidrio",

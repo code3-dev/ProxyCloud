@@ -418,7 +418,7 @@
         "image_not_found": "Wallpaper file not found",
         "failed_load": "Failed to load image",
         "default_background": "Default Gradient Background",
-        "info": "• Images will be optimized and saved locally\n• Supports JPG, PNG formats\n• Wallpaper applies to home screen only",
+        "info": "• Images and videos will be optimized and saved locally\n• Supports JPG, PNG, GIF, MP4, WebM, and MKV formats\n• Wallpaper applies to home screen only",
         "visit_store": "Visit Wallpaper Store",
         "store_button": "Wallpaper Store",
         "glass_background": "Glass Background",

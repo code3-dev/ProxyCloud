@@ -37,18 +37,13 @@ class WallpaperService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Pick an image from gallery and save it as wallpaper
+  /// Pick an image or video from gallery and save it as wallpaper
   Future<bool> pickAndSetWallpaper() async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
-      );
+      final XFile? media = await picker.pickMedia();
 
-      if (image == null) return false;
+      if (media == null) return false;
 
       // Get app documents directory
       final Directory appDir = await getApplicationDocumentsDirectory();
@@ -62,12 +57,12 @@ class WallpaperService extends ChangeNotifier {
 
       // Generate unique filename
       final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final String extension = image.path.split('.').last;
+      final String extension = media.path.split('.').last;
       final String fileName = 'wallpaper_$timestamp.$extension';
       final String savePath = '$wallpapersDir/$fileName';
 
-      // Copy the selected image to app directory
-      final File sourceFile = File(image.path);
+      // Copy the selected media to app directory
+      final File sourceFile = File(media.path);
       final File destinationFile = await sourceFile.copy(savePath);
 
       // Save wallpaper path and enable it
@@ -173,7 +168,7 @@ class WallpaperService extends ChangeNotifier {
   Future<bool> setWallpaperFromUrl(String url) async {
     try {
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         // Get app documents directory
         final Directory appDir = await getApplicationDocumentsDirectory();
@@ -186,7 +181,8 @@ class WallpaperService extends ChangeNotifier {
         }
 
         // Generate unique filename
-        final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+        final String timestamp = DateTime.now().millisecondsSinceEpoch
+            .toString();
         final String extension = url.split('.').last.split('?').first;
         final String fileName = 'wallpaper_$timestamp.$extension';
         final String savePath = '$wallpapersDir/$fileName';

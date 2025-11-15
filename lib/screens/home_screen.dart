@@ -27,9 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _urlController.text = ''; // Default to empty subscription URL
-
-    // Ping functionality removed
+    _urlController.text = '';
 
     // Listen for connection state changes
     final v2rayProvider = Provider.of<V2RayProvider>(context, listen: false);
@@ -328,8 +326,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               body: Column(
                 children: [
-                  // Connection status removed as requested
-
                   // Main content
                   Expanded(
                     child: Consumer<V2RayProvider>(
@@ -400,9 +396,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Use StreamBuilder to update the UI when statistics change
     return StreamBuilder(
-      // Create a periodic stream to update the UI every second
-      stream: Stream.periodic(const Duration(seconds: 1)),
+      // Create a periodic stream to update the UI every 5 seconds for IP refresh
+      stream: Stream.periodic(const Duration(seconds: 5)),
       builder: (context, snapshot) {
+        // Refresh IP info on each interval without showing loading animation
+        if (v2rayService.activeConfig != null) {
+          // Fetch IP info without showing loading indicator
+          v2rayService.fetchIpInfo().catchError((error) {
+            // Handle error silently
+            debugPrint('Error refreshing IP info: $error');
+          });
+        }
+
         final ipInfo = v2rayService.ipInfo;
 
         return Consumer<WallpaperService>(
@@ -451,20 +456,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     v2rayService.getFormattedTotalTraffic(),
                   ),
                   const Divider(height: 24),
-                  // Server ping information removed
-                  if (v2rayService.isLoadingIpInfo)
-                    _buildLoadingIpInfoRow()
-                  else if (ipInfo != null && ipInfo.success)
-                    _buildIpInfoRow(ipInfo, provider)
-                  else
-                    _buildIpErrorRow(
-                      context.tr('home.ip_information'),
-                      ipInfo?.errorMessage ?? context.tr('home.cant_get_ip'),
-                      () async {
-                        // Retry fetching IP info
-                        await v2rayService.fetchIpInfo();
-                      },
+                  // Show IP info without error messages
+                  _buildIpInfoRow(
+                    IpInfo(
+                      ip: ipInfo?.ip ?? '...',
+                      country: ipInfo?.country ?? '...',
+                      city: ipInfo?.city ?? '...',
+                      countryCode: ipInfo?.countryCode ?? '',
+                      success: true,
                     ),
+                    provider,
+                  ),
                 ],
               ),
             );
@@ -473,11 +475,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
-
-  // Cached ping value and loading state
-  // Ping functionality removed
-
-  // Server ping row removed
 
   Widget _buildIpInfoRow(IpInfo ipInfo, V2RayProvider provider) {
     return Column(
@@ -542,73 +539,6 @@ class _HomeScreenState extends State<HomeScreen> {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: AppTheme.primaryBlue,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildIpErrorRow(
-    String label,
-    String errorMessage,
-    VoidCallback onRetry,
-  ) {
-    return Row(
-      children: [
-        const Icon(Icons.public, size: 18, color: AppTheme.textGrey),
-        const SizedBox(width: 12),
-        Text(label, style: const TextStyle(color: AppTheme.textGrey)),
-        const Spacer(),
-        Text(
-          errorMessage,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-        ),
-        const SizedBox(width: 8),
-        InkWell(
-          onTap: onRetry,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Icon(
-              Icons.refresh,
-              size: 18,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoadingIpInfoRow() {
-    return Row(
-      children: [
-        const Icon(Icons.public, size: 18, color: AppTheme.textGrey),
-        const SizedBox(width: 12),
-        Text(
-          context.tr('home.ip_information'),
-          style: const TextStyle(color: AppTheme.textGrey),
-        ),
-        const Spacer(),
-        Text(
-          context.tr('home.fetching'),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryBlue,
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 18,
-          height: 18,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).colorScheme.primary,
-            ),
           ),
         ),
       ],

@@ -418,7 +418,7 @@
     "image_not_found": "壁纸文件未找到",
     "failed_load": "加载图片失败",
     "default_background": "默认渐变背景",
-    "info": "• 图片将被优化并本地保存\n• 支持JPG、PNG格式\n• 壁纸仅应用于主屏幕",
+    "info": "• 图片和视频将被优化并本地保存\n• 支持JPG、PNG、GIF、MP4、WebM和MKV格式\n• 壁纸仅应用于主屏幕",
     "visit_store": "访问壁纸商店",
     "store_button": "壁纸商店",
     "glass_background": "玻璃背景",

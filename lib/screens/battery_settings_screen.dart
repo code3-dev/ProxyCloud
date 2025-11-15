@@ -165,7 +165,7 @@ class _BatterySettingsScreenState extends State<BatterySettingsScreen> {
     return Scaffold(
       backgroundColor: AppTheme.primaryDark,
       appBar: AppBar(
-        title: Text(context.tr(TranslationKeys.batterySettingsTitle)),
+        title: Text("Battery Settings"),
         backgroundColor: AppTheme.surfaceContainer,
         elevation: 0,
         centerTitle: true,

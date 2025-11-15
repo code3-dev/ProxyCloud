@@ -157,79 +157,81 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
         builder: (context, wallpaperService, child) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Glass background toggle
-                _buildGlassBackgroundToggle(wallpaperService),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Glass background toggle
+                  _buildGlassBackgroundToggle(wallpaperService),
 
-                const SizedBox(height: 16),
-
-                // Current wallpaper preview
-                if (wallpaperService.isWallpaperEnabled &&
-                    wallpaperService.wallpaperPath != null)
-                  _buildCurrentWallpaperCard(wallpaperService)
-                else
-                  _buildNoWallpaperCard(),
-
-                const SizedBox(height: 16),
-
-                // Actions
-                _buildActionsCard(wallpaperService),
-
-                // Status message
-                if (_statusMessage != null) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          _statusMessage!.contains('Error') ||
-                              _statusMessage!.contains('failed')
-                          ? Colors.red.withOpacity(0.1)
-                          : AppTheme.primaryBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
+
+                  // Current wallpaper preview
+                  if (wallpaperService.isWallpaperEnabled &&
+                      wallpaperService.wallpaperPath != null)
+                    _buildCurrentWallpaperCard(wallpaperService)
+                  else
+                    _buildNoWallpaperCard(),
+
+                  const SizedBox(height: 16),
+
+                  // Actions
+                  _buildActionsCard(wallpaperService),
+
+                  // Status message
+                  if (_statusMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color:
                             _statusMessage!.contains('Error') ||
                                 _statusMessage!.contains('failed')
-                            ? Colors.red
-                            : AppTheme.primaryBlue,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _statusMessage!.contains('Error') ||
-                                  _statusMessage!.contains('failed')
-                              ? Icons.error_outline
-                              : Icons.check_circle_outline,
+                            ? Colors.red.withOpacity(0.1)
+                            : AppTheme.primaryBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
                           color:
                               _statusMessage!.contains('Error') ||
                                   _statusMessage!.contains('failed')
                               ? Colors.red
                               : AppTheme.primaryBlue,
-                          size: 20,
+                          width: 1,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _statusMessage!,
-                            style: TextStyle(
-                              color:
-                                  _statusMessage!.contains('Error') ||
-                                      _statusMessage!.contains('failed')
-                                  ? Colors.red
-                                  : AppTheme.primaryBlue,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _statusMessage!.contains('Error') ||
+                                    _statusMessage!.contains('failed')
+                                ? Icons.error_outline
+                                : Icons.check_circle_outline,
+                            color:
+                                _statusMessage!.contains('Error') ||
+                                    _statusMessage!.contains('failed')
+                                ? Colors.red
+                                : AppTheme.primaryBlue,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _statusMessage!,
+                              style: TextStyle(
+                                color:
+                                    _statusMessage!.contains('Error') ||
+                                        _statusMessage!.contains('failed')
+                                    ? Colors.red
+                                    : AppTheme.primaryBlue,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           );
         },

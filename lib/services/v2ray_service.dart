@@ -30,8 +30,8 @@ class IpInfo {
   factory IpInfo.fromJson(Map<String, dynamic> json) {
     return IpInfo(
       ip: json['ip'] ?? '',
-      country: json['country_name'] ?? '',
-      city: json['city_name'] ?? '',
+      country: json['country_name'] ?? json['country'] ?? '',
+      city: json['city_name'] ?? json['city'] ?? '',
       countryCode: json['country_code'] ?? '',
       success: true,
       errorMessage: null,
@@ -877,60 +877,97 @@ class V2RayService extends ChangeNotifier {
     return RegExp(r'^[A-Za-z0-9+/=]+$').hasMatch(str);
   }
 
-  // Removed getConnectedServerDelay method as requested
+  // Fetch IP information using two-step approach
+  Future<IpInfo> fetchIpInfo({bool showLoading = false}) async {
+    // Set loading state only if showLoading is true
+    if (showLoading) {
+      _isLoadingIpInfo = true;
+      notifyListeners();
+    }
 
-  // Fetch IP information from ipleak.net API
-  Future<IpInfo> fetchIpInfo() async {
-    // Set loading state
-    _isLoadingIpInfo = true;
-    notifyListeners();
-
-    const String apiUrl = 'https://ipleak.net/json/';
     int retryCount = 0;
-    const int maxRetries = 5;
+    const int maxRetries = 3;
 
     try {
       while (retryCount < maxRetries) {
         try {
           print('Fetching IP info, attempt ${retryCount + 1}/$maxRetries');
-          final response = await http
-              .get(Uri.parse(apiUrl))
-              .timeout(
-                const Duration(seconds: 60),
-                onTimeout: () {
-                  throw Exception(
-                    'Network timeout: Check your internet connection',
-                  );
-                },
+
+          // Step 1: Try ipwho.is API first
+          final ipWhoResponse = await http
+              .get(Uri.parse('https://ipwho.is/'))
+              .timeout(const Duration(seconds: 30));
+
+          if (ipWhoResponse.statusCode == 200) {
+            final Map<String, dynamic> data = json.decode(ipWhoResponse.body);
+
+            // Check if the response is successful
+            if (data['success'] == true) {
+              final ipInfo = IpInfo(
+                ip: data['ip'] ?? '',
+                country: data['country'] ?? '',
+                city: data['city'] ?? '',
+                countryCode: data['country_code'] ?? '',
+                success: true,
               );
 
-          if (response.statusCode == 200) {
-            final Map<String, dynamic> data = json.decode(response.body);
+              _ipInfo = ipInfo;
+              if (showLoading) {
+                _isLoadingIpInfo = false;
+              }
+              notifyListeners();
+              print(
+                'IP info fetched successfully from ipwho.is: ${ipInfo.ip} - ${ipInfo.locationString}',
+              );
+              return ipInfo;
+            }
+          }
+
+          // Step 2: Fall back to ipleak.net if ipwho.is fails or returns unsuccessful
+          print(
+            'ipwho.is failed or returned unsuccessful, falling back to ipleak.net',
+          );
+          final ipLeakResponse = await http
+              .get(Uri.parse('https://ipleak.net/json/'))
+              .timeout(const Duration(seconds: 30));
+
+          if (ipLeakResponse.statusCode == 200) {
+            final Map<String, dynamic> data = json.decode(ipLeakResponse.body);
             final ipInfo = IpInfo.fromJson(data);
 
             _ipInfo = ipInfo;
-            _isLoadingIpInfo = false;
+            if (showLoading) {
+              _isLoadingIpInfo = false;
+            }
             notifyListeners();
             print(
-              'IP info fetched successfully: ${ipInfo.ip} - ${ipInfo.locationString}',
+              'IP info fetched successfully from ipleak.net: ${ipInfo.ip} - ${ipInfo.locationString}',
             );
             return ipInfo;
-          } else {
-            print('HTTP error: ${response.statusCode}');
-            retryCount++;
-            await Future.delayed(const Duration(seconds: 1));
           }
+
+          print(
+            'Both IP APIs failed, status codes: ipwho.is=${ipWhoResponse.statusCode}, ipleak.net=${ipLeakResponse.statusCode}',
+          );
+          retryCount++;
+          await Future.delayed(const Duration(seconds: 2));
         } catch (e) {
           print('Error fetching IP info: $e');
           retryCount++;
-          await Future.delayed(const Duration(seconds: 1));
+          if (retryCount < maxRetries) {
+            await Future.delayed(const Duration(seconds: 2));
+          }
         }
       }
 
       // After max retries, return error
-      final errorInfo = IpInfo.error('Cannot get IP information');
+      final errorInfo = IpInfo.error(
+        'Cannot get IP information from either service',
+      );
       _ipInfo = errorInfo;
-      _isLoadingIpInfo = false;
+      if (showLoading) {
+        _isLoadingIpInfo = false;
+      }
       notifyListeners();
       print('Failed to fetch IP info after $maxRetries attempts');
       return errorInfo;
@@ -939,7 +976,9 @@ class V2RayService extends ChangeNotifier {
       print('Unexpected error fetching IP info: $e');
       final errorInfo = IpInfo.error('Error: $e');
       _ipInfo = errorInfo;
-      _isLoadingIpInfo = false;
+      if (showLoading) {
+        _isLoadingIpInfo = false;
+      }
       notifyListeners();
       return errorInfo;
     }

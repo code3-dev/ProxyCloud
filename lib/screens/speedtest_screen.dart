@@ -73,6 +73,13 @@ class _SpeedtestScreenState extends State<SpeedtestScreen> {
   }
 
   @override
+  void dispose() {
+    // Dispose of the WebView controller to prevent memory leaks
+    _controller.clearCache();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.primaryDark,
@@ -84,7 +91,11 @@ class _SpeedtestScreenState extends State<SpeedtestScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              _controller.reload();
+              // Clear cache before refreshing to ensure a fresh load
+              _controller.clearCache();
+              _controller.loadRequest(
+                Uri.parse('https://trevor.speedtestcustom.com'),
+              );
             },
           ),
         ],

@@ -52,20 +52,45 @@ class BackgroundGradient extends StatelessWidget {
   }
 
   Widget _buildWallpaperBackground(File wallpaperFile) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: FileImage(wallpaperFile),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withValues(
-              alpha: 0.3,
-            ), // Add overlay for better text readability
-            BlendMode.darken,
+    final String extension = wallpaperFile.path.split('.').last.toLowerCase();
+
+    // For video files, we'll display the first frame as a static image
+    // In a more advanced implementation, we could use a video player
+    if (['mp4', 'webm', 'mkv', 'gif'].contains(extension)) {
+      // For now, we'll treat videos like images
+      // A more complete solution would use a video player widget
+      return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: FileImage(wallpaperFile),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(
+                alpha: 0.3,
+              ), // Add overlay for better text readability
+              BlendMode.darken,
+            ),
           ),
         ),
-      ),
-      child: child,
-    );
+        child: child,
+      );
+    } else {
+      // For image files, use the existing implementation
+      return Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: FileImage(wallpaperFile),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(
+                alpha: 0.3,
+              ), // Add overlay for better text readability
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: child,
+      );
+    }
   }
 }

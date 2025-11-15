@@ -79,13 +79,11 @@ class _ServerListItemState extends State<ServerListItem> {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        // Removed delay display as requested
                       ],
                     ),
                   ),
                   Row(
                     children: [
-                      // Removed ping button as requested
                       IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
@@ -227,8 +225,6 @@ class _ServerListItemState extends State<ServerListItem> {
         return Colors.grey;
     }
   }
-
-  // Removed _getPingColor method
 
   String _getSubscriptionName(BuildContext context) {
     final provider = Provider.of<V2RayProvider>(context, listen: false);

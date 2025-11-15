@@ -418,7 +418,7 @@
         "image_not_found": "Duvar kağıdı dosyası bulunamadı",
         "failed_load": "Resim yüklenemedi",
         "default_background": "Varsayılan Gradyan Arka Plan",
-        "info": "• Resimler yerel olarak optimize edilir ve kaydedilir\n• JPG, PNG formatlarını destekler\n• Duvar kağıdı sadece ana ekrana uygulanır",
+        "info": "• Resimler ve videolar yerel olarak optimize edilir ve kaydedilir\n• JPG, PNG, GIF, MP4, WebM ve MKV formatlarını destekler\n• Duvar kağıdı sadece ana ekrana uygulanır",
         "visit_store": "Duvar Kağıdı Mağazasını Ziyaret Et",
         "store_button": "Duvar Kağıdı Mağazası",
         "glass_background": "Cam Arka Plan",

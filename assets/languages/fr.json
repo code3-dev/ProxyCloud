@@ -418,7 +418,7 @@
     "image_not_found": "Fichier de fond d'écran non trouvé",
     "failed_load": "Échec du chargement de l'image",
     "default_background": "Fond Dégradé par Défaut",
-    "info": "• Les images seront optimisées et enregistrées localement\n• Supporte les formats JPG, PNG\n• Le fond s'applique uniquement à l'écran d'accueil",
+    "info": "• Les images et vidéos seront optimisées et enregistrées localement\n• Supporte les formats JPG, PNG, GIF, MP4, WebM et MKV\n• Le fond s'applique uniquement à l'écran d'accueil",
     "visit_store": "Visiter la Boutique de Fonds",
     "store_button": "Boutique de Fonds",
     "glass_background": "Fond de Verre",

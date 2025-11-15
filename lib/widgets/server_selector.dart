@@ -12,8 +12,6 @@ import 'error_snackbar.dart';
 class ServerSelector extends StatelessWidget {
   const ServerSelector({Key? key}) : super(key: key);
 
-  // Proxy mode switch removed as requested
-
   @override
   Widget build(BuildContext context) {
     return Consumer3<V2RayProvider, LanguageProvider, WallpaperService>(
@@ -146,7 +144,6 @@ class ServerSelector extends StatelessWidget {
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
-                      // Removed server delay icon as requested
                     ] else ...[
                       Expanded(
                         child: Text(
@@ -169,8 +166,6 @@ class ServerSelector extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            // Proxy Mode Switch removed as requested
-            // Server and config type information removed as requested
           ],
         ),
       ),

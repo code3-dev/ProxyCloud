@@ -249,7 +249,6 @@ class _ServerBottomSheetState extends State<ServerBottomSheet> {
                             Navigator.pop(context);
                           }
                         },
-                  // Removed onLongPress handler for server pinging as requested
                 );
               },
             ),
