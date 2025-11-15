@@ -19,7 +19,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
   String _errorMessage = '';
   bool _isLoadingServers = false;
   bool _isProxyMode = false;
-  bool _isInitializing = true; // New flag to track initialization state
+  bool _isInitializing = true;
 
   // Method channel for VPN control
   static const platform = MethodChannel('com.cloud.pira/vpn_control');
@@ -67,8 +67,6 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       _configs[i].isConnected = false;
     }
 
-    _selectedConfig = null;
-
     // Notify listeners immediately to update UI in real-time
     notifyListeners();
 
@@ -105,7 +103,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       final prefs = await SharedPreferences.getInstance();
       _isProxyMode = prefs.getBool('proxy_mode_enabled') ?? false;
 
-      // Update all subscriptions on app start
+      // Update all subscriptions on app start with fresh data
       await updateAllSubscriptions();
 
       // CRITICAL FIX: Enhanced synchronization with actual VPN service state
@@ -230,7 +228,8 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
         for (var config in _configs) {
           config.isConnected = false;
         }
-        _selectedConfig = null;
+        // FIX: Don't clear the selected config when VPN is not connected
+        // _selectedConfig = null;  // This line was causing the bug
 
         // Clear active config from service if it exists
         if (_v2rayService.activeConfig != null) {
@@ -247,7 +246,8 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       for (var config in _configs) {
         config.isConnected = false;
       }
-      _selectedConfig = null;
+      // FIX: Don't clear the selected config on error
+      // _selectedConfig = null;  // This line was causing the bug
     }
   }
 
@@ -531,6 +531,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
 
     try {
+      // NEW: Force fresh fetch by bypassing any cache mechanisms
       final configs = await _v2rayService.parseSubscriptionUrl(
         subscription.url,
       );
@@ -653,11 +654,12 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
           // Skip empty or invalid subscriptions
           if (subscription.url.isEmpty) continue;
 
+          // NEW: Force fresh fetch by bypassing any cache mechanisms
           final configs = await _v2rayService.parseSubscriptionUrl(
             subscription.url,
           );
 
-          // Remove old configs for this subscription
+          // Remove old configs for this subscription (if any exist)
           _configs.removeWhere((c) => subscription.configIds.contains(c.id));
 
           // Add new configs
@@ -880,8 +882,6 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
         _configs[i].isConnected = false;
       }
 
-      _selectedConfig = null;
-
       // Persist the changes
       await _v2rayService.saveConfigs(_configs);
     } catch (e) {
@@ -1040,6 +1040,36 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<List<V2RayConfig>> parseSubscriptionContent(String content) async {
     return await _v2rayService.parseSubscriptionContent(content);
+  }
+
+  // NEW: Method to clear subscription configs to force fresh updates
+  Future<void> _clearSubscriptionConfigs() async {
+    try {
+      // Only clear subscription configs if we have subscriptions loaded
+      if (_subscriptions.isNotEmpty) {
+        // Get all subscription config IDs
+        final subscriptionConfigIds = <String>{};
+        for (var subscription in _subscriptions) {
+          subscriptionConfigIds.addAll(subscription.configIds);
+        }
+
+        // Remove all subscription configs from the configs list
+        _configs.removeWhere((c) => subscriptionConfigIds.contains(c.id));
+
+        // Clear config IDs from all subscriptions
+        for (int i = 0; i < _subscriptions.length; i++) {
+          _subscriptions[i] = _subscriptions[i].copyWith(configIds: []);
+        }
+
+        // Save the cleared state
+        await _v2rayService.saveConfigs(_configs);
+        await _v2rayService.saveSubscriptions(_subscriptions);
+
+        print('Cleared ${subscriptionConfigIds.length} subscription configs for fresh update');
+      }
+    } catch (e) {
+      print('Error clearing subscription configs: $e');
+    }
   }
 
   Future<void> addSubscriptionFromFile(

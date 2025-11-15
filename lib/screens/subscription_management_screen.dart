@@ -909,12 +909,9 @@ class _SubscriptionManagementScreenState
                 '2. ${context.tr(TranslationKeys.subscriptionManagementUrlWithConfigs)}',
               ),
               Text(
-                '3. ${context.tr(TranslationKeys.subscriptionManagementImportFromFile)}',
+                '3. ${context.tr(TranslationKeys.subscriptionManagementAdd)}',
               ),
-              Text(
-                '4. ${context.tr(TranslationKeys.subscriptionManagementAdd)}',
-              ),
-              Text('5. ${context.tr(TranslationKeys.commonRefresh)}'),
+              Text('4. ${context.tr(TranslationKeys.commonRefresh)}'),
             ],
           ),
         ),

@@ -679,7 +679,7 @@ class TranslationKeys {
   static const String subscriptionManagementUniqueName =
       'subscription_management.unique_name_step';
   static const String subscriptionManagementUrlWithConfigs =
-      'subscription_management.url_with_configs_step';
+      'subscription_management.url_with_configs';
   static const String subscriptionManagementImportFromFile =
       'subscription_management.import_from_file';
   static const String subscriptionManagementGotIt =

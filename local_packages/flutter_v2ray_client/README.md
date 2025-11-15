@@ -18,11 +18,11 @@ It provides enhanced V2Ray/Xray proxy capabilities for Android with optimization
 
 ### 📱 Platform Support
 
-| Platform | Status | Core Version |
-|----------|--------|--------------|
-| Android  | ✅ Done | Xray 25.9.11 |
-| iOS      | ⏳ Coming Soon | - |
-| Desktop  | ⏳ Coming Soon | - |
+| Platform | Status |
+|----------|--------|
+| Android  | ✅ Done |
+| iOS      | ⏳ Coming Soon |
+| Desktop  | ⏳ Coming Soon |
 
 ### 🛠 Installation
 

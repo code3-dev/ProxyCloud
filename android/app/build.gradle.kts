@@ -42,8 +42,8 @@ android {
         applicationId = "com.cloud.pira"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 50
-        versionName = "3.8.0"
+        versionCode = 51
+        versionName = "3.8.1"
 
         manifestPlaceholders.put("io.flutter.embedding.android.EnableImpeller", "false")
     }
@@ -65,7 +65,12 @@ android {
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            val storeFilePath = keystoreProperties.getProperty("storeFile") ?: "keystore/debug.keystore"
+            signingConfig = if (file(storeFilePath).exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             isMinifyEnabled = false
             isShrinkResources = false
             ndk {

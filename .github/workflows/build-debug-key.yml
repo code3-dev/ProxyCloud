@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,19 +33,19 @@ jobs:
         run: flutter pub get
 
       - name: Build universal APK
-        run: flutter build apk --debug
+        run: flutter build apk --release
 
       - name: Build split APKs
-        run: flutter build apk --split-per-abi --debug
+        run: flutter build apk --split-per-abi --release
 
       - name: Rename APKs
         run: |
           mkdir -p release
-          copy build\app\outputs\flutter-apk\app-release.apk release\proxycloud-universal.apk
-          copy build\app\outputs\flutter-apk\app-armeabi-v7a-release.apk release\proxycloud-armeabi-v7a.apk
-          copy build\app\outputs\flutter-apk\app-arm64-v8a-release.apk release\proxycloud-arm64-v8a.apk
-          copy build\app\outputs\flutter-apk\app-x86_64-release.apk release\proxycloud-x86_64.apk
-        shell: cmd
+          cp build/app/outputs/flutter-apk/app-release.apk release/proxycloud-universal.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk release/proxycloud-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk release/proxycloud-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk release/proxycloud-x86_64.apk
+        shell: bash
 
       - name: Get tag name
         id: get_tag

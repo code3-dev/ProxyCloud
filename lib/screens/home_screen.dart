@@ -396,16 +396,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Use StreamBuilder to update the UI when statistics change
     return StreamBuilder(
-      // Create a periodic stream to update the UI every 5 seconds for IP refresh
-      stream: Stream.periodic(const Duration(seconds: 5)),
+      // Create a periodic stream to update the UI every 1 second for traffic and every 5 seconds for IP
+      stream: Stream.periodic(const Duration(seconds: 1)),
       builder: (context, snapshot) {
-        // Refresh IP info on each interval without showing loading animation
-        if (v2rayService.activeConfig != null) {
-          // Fetch IP info without showing loading indicator
-          v2rayService.fetchIpInfo().catchError((error) {
-            // Handle error silently
-            debugPrint('Error refreshing IP info: $error');
-          });
+        // Refresh IP info every 5 seconds (when snapshot.data is multiple of 5)
+        if (snapshot.hasData && snapshot.data! % 5 == 0) {
+          if (v2rayService.activeConfig != null) {
+            // Fetch IP info without showing loading indicator
+            v2rayService.fetchIpInfo().catchError((error) {
+              // Handle error silently
+              debugPrint('Error refreshing IP info: $error');
+            });
+          }
         }
 
         final ipInfo = v2rayService.ipInfo;
@@ -448,7 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Divider(height: 24),
 
-                  // Total traffic usage
+                  // Total traffic usage - updated every second
                   _buildTrafficRow(
                     context.tr('home.traffic_usage'),
                     v2rayService.getFormattedUpload(),

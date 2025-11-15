@@ -54,9 +54,9 @@ class BackgroundGradient extends StatelessWidget {
   Widget _buildWallpaperBackground(File wallpaperFile) {
     final String extension = wallpaperFile.path.split('.').last.toLowerCase();
 
-    // For video files, we'll display the first frame as a static image
+    // For gif files, we'll display the first frame as a static image
     // In a more advanced implementation, we could use a video player
-    if (['mp4', 'webm', 'mkv', 'gif'].contains(extension)) {
+    if (['gif'].contains(extension)) {
       // For now, we'll treat videos like images
       // A more complete solution would use a video player widget
       return Container(

@@ -209,6 +209,54 @@ class _LoadingServerCard extends StatelessWidget {
               const CircularProgressIndicator(color: AppTheme.connectedGreen),
               const SizedBox(height: 16),
               Text(context.tr(TranslationKeys.serverSelectorLoadingServers)),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () async {
+                  final provider = Provider.of<V2RayProvider>(
+                    context,
+                    listen: false,
+                  );
+                  try {
+                    // Show loading indicator
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          context.tr('home.updating_subscriptions'),
+                        ),
+                      ),
+                    );
+
+                    // Update all subscriptions instead of just fetching servers
+                    await provider.updateAllSubscriptions();
+                    provider.fetchNotificationStatus();
+
+                    // Show success message
+                    if (provider.errorMessage.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            context.tr('home.subscriptions_updated'),
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(provider.errorMessage)),
+                      );
+                      provider.clearError();
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${context.tr(TranslationKeys.serverSelectorErrorRefreshing)}: ${e.toString()}',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Text(context.tr(TranslationKeys.commonRefresh)),
+              ),
             ],
           ),
         ),
@@ -247,21 +295,41 @@ class _EmptyServerCard extends StatelessWidget {
                     listen: false,
                   );
                   try {
-                    // Since we no longer have default servers, we'll show a message
-                    ErrorSnackbar.show(
-                      context,
-                      context.tr(TranslationKeys.serverSelectorAddSubscription),
+                    // Show loading indicator
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          context.tr('home.updating_subscriptions'),
+                        ),
+                      ),
                     );
 
-                    // Check if there was an error
-                    if (provider.errorMessage.isNotEmpty) {
-                      ErrorSnackbar.show(context, provider.errorMessage);
+                    // Update all subscriptions instead of just fetching servers
+                    await provider.updateAllSubscriptions();
+                    provider.fetchNotificationStatus();
+
+                    // Show success message
+                    if (provider.errorMessage.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            context.tr('home.subscriptions_updated'),
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(provider.errorMessage)),
+                      );
                       provider.clearError();
                     }
                   } catch (e) {
-                    ErrorSnackbar.show(
-                      context,
-                      '${context.tr(TranslationKeys.serverSelectorErrorRefreshing)}: ${e.toString()}',
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          '${context.tr(TranslationKeys.serverSelectorErrorRefreshing)}: ${e.toString()}',
+                        ),
+                      ),
                     );
                   }
                 },

@@ -291,71 +291,85 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade700),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: FutureBuilder<bool>(
-                  future: wallpaperService.wallpaperFileExists(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (snapshot.data == true &&
-                        wallpaperService.wallpaperPath != null) {
-                      return Image.file(
-                        File(wallpaperService.wallpaperPath!),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error,
-                                  color: Colors.red,
-                                  size: 48,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  context.tr(
-                                    TranslationKeys.wallpaperSettingsFailedLoad,
-                                  ),
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    }
-
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.tr(
-                              TranslationKeys.wallpaperSettingsImageNotFound,
-                            ),
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
+            GestureDetector(
+              onTap: () {
+                if (wallpaperService.wallpaperPath != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FullScreenWallpaperViewer(
+                        imagePath: wallpaperService.wallpaperPath!,
                       ),
-                    );
-                  },
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade700),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: FutureBuilder<bool>(
+                    future: wallpaperService.wallpaperFileExists(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.data == true &&
+                          wallpaperService.wallpaperPath != null) {
+                        return Image.file(
+                          File(wallpaperService.wallpaperPath!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.error,
+                                    color: Colors.red,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    context.tr(
+                                      TranslationKeys.wallpaperSettingsFailedLoad,
+                                    ),
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              context.tr(
+                                TranslationKeys.wallpaperSettingsImageNotFound,
+                              ),
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -527,6 +541,43 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
               style: TextStyle(fontSize: 12, color: Colors.grey[400]),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Full-screen wallpaper viewer widget
+class FullScreenWallpaperViewer extends StatelessWidget {
+  final String imagePath;
+
+  const FullScreenWallpaperViewer({Key? key, required this.imagePath})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black54,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          panEnabled: true,
+          minScale: 0.5,
+          maxScale: 4,
+          child: Image.file(
+            File(imagePath),
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const Center(
+              child: Icon(Icons.broken_image, color: Colors.white70, size: 48),
+            ),
+          ),
         ),
       ),
     );
