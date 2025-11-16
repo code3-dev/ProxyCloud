@@ -108,11 +108,11 @@ class _ToolsScreenState extends State<ToolsScreen> {
                   padding: const EdgeInsets.all(16.0),
                   sliver: SliverGrid(
                     gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 180, // More responsive grid
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.85, // Adjusted aspect ratio
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.9,
                         ),
                     delegate: SliverChildListDelegate([
                       _buildToolCard(
@@ -346,80 +346,52 @@ class _ToolsScreenState extends State<ToolsScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Row for icon and info button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: iconColor.withValues(alpha: 0.2),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconColor.withValues(alpha: 0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
                     ),
-                    child: Icon(icon, color: iconColor, size: 32),
-                  ),
-                  // Info icon in top right
-                  IconButton(
-                    icon: const Icon(Icons.info_outline, size: 20),
-                    color: Colors.grey[400],
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            backgroundColor: AppTheme.secondaryDark,
-                            title: Text(
-                              title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            content: Text(
-                              description,
-                              style: TextStyle(
-                                color: Colors.grey[300],
-                                fontSize: 14,
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text(
-                                  'OK',
-                                  style: TextStyle(color: AppTheme.primaryBlue),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Title with full display (no overflow)
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isExitButton ? Colors.red : Colors.white,
+                  ],
                 ),
-                textAlign: TextAlign.center,
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(height: 8),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isExitButton ? Colors.red : Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isExitButton ? Colors.redAccent : Colors.grey[400],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
