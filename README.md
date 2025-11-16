@@ -199,7 +199,7 @@ If you encounter any issues or have questions, please open an issue on our GitHu
 
 If you find Proxy Cloud useful, please consider supporting the development:
 
-<a href="https://nowpayments.io/donation?api_key=519d3c4a-5592-4c0a-b2f2-df7ca33e4703" target="_blank" rel="noreferrer noopener">
+<a href="https://nowpayments.io/donation/proxycloud" target="_blank" rel="noreferrer noopener">
     <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
 </a>
 

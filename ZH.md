@@ -191,7 +191,7 @@ yay -S proxycloud-gui-bin
 
 如果您觉得代理云有用，请考虑支持开发：
 
-<a href="https://nowpayments.io/donation?api_key=519d3c4a-5592-4c0a-b2f2-df7ca33e4703" target="_blank" rel="noreferrer noopener">
+<a href="https://nowpayments.io/donation/proxycloud" target="_blank" rel="noreferrer noopener">
     <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
 </a>
 
