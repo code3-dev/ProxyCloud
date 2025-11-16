@@ -170,7 +170,7 @@ yay -S proxycloud-gui-bin
 
 4. 构建发布版APK：
    ```bash
-   flutter build apk
+   flutter build apk --release
    ```
 
 ### 📁 项目结构

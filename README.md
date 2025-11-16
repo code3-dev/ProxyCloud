@@ -169,7 +169,7 @@ yay -S proxycloud-gui-bin
 
 4. Build release APK:
    ```bash
-   flutter build apk
+   flutter build apk --release
    ```
 
 ### 📁 Project Structure

@@ -169,7 +169,7 @@ yay -S proxycloud-gui-bin
 
 4. Собрать релизный APK:
    ```bash
-   flutter build apk
+   flutter build apk --release
    ```
 
 ### 📁 Структура проекта

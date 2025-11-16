@@ -169,7 +169,7 @@ yay -S proxycloud-gui-bin
 
 4. ساخت فایل APK نهایی:
    ```bash
-   flutter build apk
+   flutter build apk --release
    ```
 
 ### 📁 ساختار پروژه
