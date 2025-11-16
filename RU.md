@@ -186,6 +186,14 @@ yay -S proxycloud-gui-bin
 - [Provider](https://pub.dev/packages/provider) - Решение для управления состоянием
 - Всем участникам, которые помогли сформировать этот проект
 
+## 💖 Поддержка разработки
+
+Если вы считаете Proxy Cloud полезным, пожалуйста, поддержите разработку:
+
+<a href="https://nowpayments.io/donation?api_key=519d3c4a-5592-4c0a-b2f2-df7ca33e4703" target="_blank" rel="noreferrer noopener">
+    <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
+</a>
+
 ---
 
 <p align="center">

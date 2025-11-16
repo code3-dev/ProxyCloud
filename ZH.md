@@ -187,6 +187,14 @@ yay -S proxycloud-gui-bin
 - [Provider](https://pub.dev/packages/provider) - 状态管理解决方案
 - 所有帮助塑造这个项目的贡献者
 
+## 💖 支持开发
+
+如果您觉得代理云有用，请考虑支持开发：
+
+<a href="https://nowpayments.io/donation?api_key=519d3c4a-5592-4c0a-b2f2-df7ca33e4703" target="_blank" rel="noreferrer noopener">
+    <img src="https://nowpayments.io/images/embeds/donation-button-white.svg" alt="Cryptocurrency & Bitcoin donation button by NOWPayments">
+</a>
+
 ---
 
 <p align="center">
