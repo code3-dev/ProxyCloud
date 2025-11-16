@@ -78,7 +78,7 @@ Proxy Cloud is a powerful Flutter application designed to provide secure, privat
 ### 🌍 Multi-Language Support
 Proxy Cloud supports 8+ languages:
 - English 🇺🇸
-- Persian (Farsi) 🇮🇷
+- Persian (Farsi) 🦁
 - Chinese 🇨🇳
 - Russian 🇷🇺
 - Spanish 🇪🇸
