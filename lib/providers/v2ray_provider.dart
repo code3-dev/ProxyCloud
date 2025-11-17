@@ -95,16 +95,23 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
 
       // Load configurations first
       await loadConfigs();
+      debugPrint('Loaded ${_configs.length} configs during initialization');
 
       // Load subscriptions
       await loadSubscriptions();
+      debugPrint('Loaded ${_subscriptions.length} subscriptions during initialization');
 
       // Load proxy mode setting from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       _isProxyMode = prefs.getBool('proxy_mode_enabled') ?? false;
 
       // Update all subscriptions on app start with fresh data
-      await updateAllSubscriptions();
+      // Only update if we have subscriptions to avoid unnecessary operations
+      if (_subscriptions.isNotEmpty) {
+        debugPrint('Updating all subscriptions with fresh data...');
+        await updateAllSubscriptions();
+        debugPrint('Finished updating all subscriptions');
+      }
 
       // CRITICAL FIX: Enhanced synchronization with actual VPN service state
       await _enhancedSyncWithVpnServiceState();
@@ -321,6 +328,12 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
     _setLoading(true);
     try {
       _subscriptions = await _v2rayService.loadSubscriptions();
+      
+      // Debug information
+      debugPrint('Loaded ${_subscriptions.length} subscriptions');
+      for (var sub in _subscriptions) {
+        debugPrint('  Subscription: ${sub.name} with ${sub.configIds.length} configs');
+      }
 
       // Create default subscription if no subscriptions exist
       if (_subscriptions.isEmpty) {
@@ -334,11 +347,13 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
         );
         _subscriptions.add(defaultSubscription);
         await _v2rayService.saveSubscriptions(_subscriptions);
+        debugPrint('Created default subscription');
       }
 
       // Ensure configs are loaded and match subscription config IDs
       if (_configs.isEmpty) {
         _configs = await _v2rayService.loadConfigs();
+        debugPrint('Loaded ${_configs.length} configs');
       }
 
       // Verify that all subscription config IDs exist in the configs list
@@ -346,6 +361,8 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       for (var subscription in _subscriptions) {
         final configIds = subscription.configIds;
         final existingConfigIds = _configs.map((c) => c.id).toSet();
+        
+        debugPrint('Subscription "${subscription.name}" has ${configIds.length} config IDs, ${existingConfigIds.length} existing configs');
 
         // Check if any config IDs in the subscription are missing from the configs list
         final missingConfigIds = configIds
@@ -353,8 +370,8 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
             .toList();
 
         if (missingConfigIds.isNotEmpty) {
-          print(
-            'Warning: Found ${missingConfigIds.length} missing configs for subscription ${subscription.name}',
+          debugPrint(
+            'Warning: Found ${missingConfigIds.length} missing configs for subscription ${subscription.name}: $missingConfigIds',
           );
           // Update the subscription to remove missing config IDs
           final updatedConfigIds = configIds
@@ -367,6 +384,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
             _subscriptions[index] = subscription.copyWith(
               configIds: updatedConfigIds,
             );
+            debugPrint('Updated subscription "${subscription.name}" to have ${updatedConfigIds.length} config IDs');
           }
         }
       }
@@ -382,6 +400,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
   Future<void> addConfig(V2RayConfig config) async {
     // Add config and display it immediately
     _configs.add(config);
+    debugPrint('Added config: ${config.remark} (${config.id}) - Total configs: ${_configs.length}');
 
     // Save the configuration immediately to display it
     await _v2rayService.saveConfigs(_configs);
@@ -390,12 +409,15 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<void> removeConfig(V2RayConfig config) async {
     try {
+      debugPrint('Removing config: ${config.remark} (${config.id})');
       _configs.removeWhere((c) => c.id == config.id);
+      debugPrint('After removal - Total configs: ${_configs.length}');
 
       // Also remove from subscriptions if the config is part of any subscription
       for (int i = 0; i < _subscriptions.length; i++) {
         final subscription = _subscriptions[i];
         if (subscription.configIds.contains(config.id)) {
+          debugPrint('Removing config from subscription: ${subscription.name}');
           final updatedConfigIds = List<String>.from(subscription.configIds)
             ..remove(config.id);
           _subscriptions[i] = subscription.copyWith(
@@ -482,6 +504,9 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       _configs.addAll(configs);
 
       final newConfigIds = configs.map((c) => c.id).toList();
+      
+      // Debug information
+      debugPrint('Adding subscription "$name" with ${configs.length} configs and IDs: $newConfigIds');
 
       // Create subscription
       final subscription = Subscription(
@@ -497,6 +522,9 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       // Save both configs and subscription
       await _v2rayService.saveConfigs(_configs);
       await _v2rayService.saveSubscriptions(_subscriptions);
+      
+      // Debug information
+      debugPrint('Subscription "$name" added successfully');
 
       // Update UI after everything is saved
       notifyListeners();
@@ -649,6 +677,9 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       bool anyUpdated = false;
       List<String> failedSubscriptions = [];
 
+      // Keep track of all subscription config IDs to properly filter local configs
+      final allSubscriptionConfigIds = <String>{};
+
       for (final subscription in subscriptionsCopy) {
         try {
           // Skip empty or invalid subscriptions
@@ -678,6 +709,9 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
             );
             anyUpdated = true;
           }
+
+          // Add new config IDs to the set of all subscription config IDs
+          allSubscriptionConfigIds.addAll(newConfigIds);
         } catch (e) {
           // Record failed subscription
           failedSubscriptions.add(subscription.name);

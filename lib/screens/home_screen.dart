@@ -12,6 +12,7 @@ import '../theme/app_theme.dart';
 import 'about_screen.dart';
 import '../services/v2ray_service.dart';
 import '../services/wallpaper_service.dart';
+import '../utils/auto_select_util.dart';
 import 'subscription_management_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _urlController = TextEditingController();
+  bool _isAutoSelecting = false;
 
   @override
   void initState() {
@@ -243,6 +245,153 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _autoSelectAndConnect(V2RayProvider provider) async {
+    if (_isAutoSelecting) return;
+
+    setState(() {
+      _isAutoSelecting = true;
+    });
+
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: AppTheme.secondaryDark,
+          title: Text(context.tr('server_selection.auto_select')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
+              ),
+              const SizedBox(height: 16),
+              Text(context.tr('server_selection.testing_servers')),
+              const SizedBox(height: 8),
+              StreamBuilder<String>(
+                stream: Stream.periodic(const Duration(milliseconds: 500), (count) {
+                  final messages = [
+                    'Testing servers for fastest connection...',
+                    'Analyzing server response times...',
+                    'Finding optimal server...',
+                    'Almost done...',
+                  ];
+                  return messages[count % messages.length];
+                }),
+                builder: (context, snapshot) {
+                  return Text(
+                    snapshot.data ?? 'Testing servers for fastest connection...',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+
+      // Get all configs
+      final configs = provider.configs;
+      if (configs.isEmpty) {
+        if (mounted) {
+          Navigator.of(context).pop(); // Close dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.tr('server_selector.no_servers')),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Run auto-select algorithm
+      final result = await AutoSelectUtil.runAutoSelect(
+        configs,
+        provider.v2rayService,
+        onStatusUpdate: (message) {
+          // We could update UI here if needed, but for now we'll just debug print
+          debugPrint('Auto-select status: $message');
+        },
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close dialog
+      }
+
+      if (result.selectedConfig != null && result.bestPing != null) {
+        // Connect to the best server
+        await provider.selectConfig(result.selectedConfig!);
+        await provider.connectToServer(
+          result.selectedConfig!,
+          provider.isProxyMode,
+        );
+        final success = provider.errorMessage.isEmpty; // Check if connection was successful
+
+        if (mounted) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '${context.tr('server_selection.lowest_ping', parameters: {
+                    'server': result.selectedConfig!.remark,
+                    'ping': result.bestPing.toString(),
+                  })} - Connected!',
+                ),
+                backgroundColor: AppTheme.connectedGreen,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  context.tr('server_selection.connect_failed', parameters: {
+                    'server': result.selectedConfig!.remark,
+                    'error': 'Connection failed',
+                  }),
+                ),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result.errorMessage ??
+                    context.tr('server_selection.no_suitable_server'),
+              ),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.tr('server_selection.error_updating')}: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAutoSelecting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
@@ -258,6 +407,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 elevation: 0,
                 centerTitle: false,
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.auto_mode),
+                    onPressed: () async {
+                      final provider = Provider.of<V2RayProvider>(
+                        context,
+                        listen: false,
+                      );
+                      await _autoSelectAndConnect(provider);
+                    },
+                    tooltip: context.tr('server_selection.auto_select'),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.refresh),
                     onPressed: () async {

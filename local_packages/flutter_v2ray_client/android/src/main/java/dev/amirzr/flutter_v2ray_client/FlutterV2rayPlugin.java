@@ -2,12 +2,15 @@ package dev.amirzr.flutter_v2ray_client;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.VpnService;
 import android.os.Build;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,6 +52,37 @@ public class FlutterV2rayPlugin implements FlutterPlugin, MethodCallHandler, Act
 
     private static final int REQUEST_CODE_VPN_PERMISSION = 1001;
     private static final int REQUEST_CODE_POST_NOTIFICATIONS = 1002;
+    
+    private void requestBatteryOptimization(Activity activity) {
+        // Only request once per app session to prevent unlimited requests
+        if (activity != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Check if we've already requested battery optimization for this session
+            android.content.SharedPreferences prefs = activity.getSharedPreferences("battery_optimization", Context.MODE_PRIVATE);
+            boolean hasRequested = prefs.getBoolean("requested", false);
+            
+            if (!hasRequested) {
+                // Request battery optimization exemption if not already granted
+                android.os.PowerManager powerManager = (android.os.PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+                if (!powerManager.isIgnoringBatteryOptimizations(activity.getPackageName())) {
+                    try {
+                        Intent batteryIntent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                        batteryIntent.setData(Uri.parse("package:" + activity.getPackageName()));
+                        activity.startActivity(batteryIntent);
+                    } catch (ActivityNotFoundException e) {
+                        // Fallback to general battery optimization settings
+                        try {
+                            Intent fallbackIntent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                            activity.startActivity(fallbackIntent);
+                        } catch (ActivityNotFoundException ignored) {
+                            // If we can't open settings, continue without it
+                        }
+                    }
+                }
+                // Mark that we've requested battery optimization for this session
+                prefs.edit().putBoolean("requested", true).apply();
+            }
+        }
+    }
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -175,6 +209,10 @@ public class FlutterV2rayPlugin implements FlutterPlugin, MethodCallHandler, Act
                                     REQUEST_CODE_POST_NOTIFICATIONS);
                         }
                     }
+                    
+                    // Request battery optimization exemption for better performance on Android 12+
+                    requestBatteryOptimization(activity);
+                    
                     final Intent request = VpnService.prepare(activity);
                     if (request != null) {
                         pendingResult = result;

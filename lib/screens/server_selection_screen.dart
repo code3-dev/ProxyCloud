@@ -40,21 +40,23 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   final V2RayService _v2rayService = V2RayService();
   final StreamController<String> _autoConnectStatusStream =
       StreamController<String>.broadcast();
-  List<V2RayConfig> _originalOrder = []; // Store original order
+  
+  // Add the missing _originalOrder field
+  List<V2RayConfig> _originalOrder = [];
 
-  /// Get ping batch size from shared preferences
+  /// Get ping batch size from shared preferences (increased default for faster testing)
   Future<int> _getPingBatchSize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final int batchSize =
-          prefs.getInt(_pingBatchSizeKey) ?? 5; // Default to 5
-      // Ensure the value is between 1 and 10
+          prefs.getInt(_pingBatchSizeKey) ?? 10; // Increased default to 10
+      // Ensure the value is between 1 and 20 for faster testing
       if (batchSize < 1) return 1;
-      if (batchSize > 10) return 10;
+      if (batchSize > 20) return 20; // Increased max to 20
       return batchSize;
     } catch (e) {
       debugPrint('Error getting ping batch size: $e');
-      return 5; // Default value
+      return 10; // Increased default value
     }
   }
 
@@ -132,6 +134,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   Future<void> _importFromClipboard() async {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (!mounted) return; // Check if widget is still mounted
       if (clipboardData == null ||
           clipboardData.text == null ||
           clipboardData.text!.isEmpty) {
@@ -356,14 +359,14 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
     }
   }
 
-  Future<int?> _pingServer(V2RayConfig config) async {
+  Future<int> _pingServer(V2RayConfig config) async {
     try {
       // Check if task was cancelled or widget unmounted
       if (_cancelPingTasks[config.id] == true || !mounted) {
         return -1;
       }
 
-      return await _v2rayService
+      final delay = await _v2rayService
           .getServerDelay(config)
           .timeout(
             const Duration(seconds: 8), // Reduced timeout for better UX
@@ -372,6 +375,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
               return -1; // Return -1 on timeout
             },
           );
+      return delay ?? -1; // Handle null case by returning -1
     } catch (e) {
       debugPrint('Error pinging server ${config.remark}: $e');
       return -1; // Return -1 on error
@@ -400,17 +404,17 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       // Get configs based on current filter
       List<V2RayConfig> configsToPing = [];
       if (_selectedFilter == 'All') {
-        configsToPing = provider.configs;
+        configsToPing = widget.configs;
       } else if (_selectedFilter == 'Local') {
-        // Get local configs (not in any subscription)
+        // Get all subscription config IDs to identify local configs
         final allSubscriptionConfigIds = subscriptions
             .expand((sub) => sub.configIds)
             .toSet();
-        configsToPing = provider.configs
+        configsToPing = widget.configs
             .where((config) => !allSubscriptionConfigIds.contains(config.id))
             .toList();
       } else {
-        // Get configs for specific subscription
+        // Filter by subscription
         final subscription = subscriptions.firstWhere(
           (sub) => sub.name == _selectedFilter,
           orElse: () => Subscription(
@@ -421,12 +425,19 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
             configIds: [],
           ),
         );
-        configsToPing = provider.configs
-            .where((config) => subscription.configIds.contains(config.id))
-            .toList();
+        if (subscription.id.isNotEmpty) {
+          configsToPing = widget.configs
+              .where((config) => subscription.configIds.contains(config.id))
+              .toList();
+        }
       }
 
-      // Process configs in batches
+      // Remove already connected config from ping test
+      configsToPing = configsToPing
+          .where((config) => config.id != widget.selectedConfig?.id)
+          .toList();
+
+      // Process configs in larger batches for faster testing
       for (int i = 0; i < configsToPing.length; i += batchSize) {
         if (!mounted) break;
 
@@ -435,19 +446,25 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
             : configsToPing.length;
         final batch = configsToPing.sublist(i, endIndex);
 
-        // Ping all configs in the batch in parallel
+        // Ping all configs in the batch in parallel with optimized settings
         final futures = <Future<void>>[];
         for (final config in batch) {
           if (!mounted) break;
           futures.add(_loadPingForConfig(config, [config]));
         }
 
-        // Wait for all configs in the batch to complete
-        await Future.wait(futures);
+        // Wait for all configs in the batch to complete with shorter timeout
+        await Future.wait(futures).timeout(
+          const Duration(seconds: 8),
+          onTimeout: () {
+            debugPrint('Batch ping timeout');
+            return []; // Return empty list on timeout
+          },
+        );
 
-        // Small delay between batches to avoid overwhelming the system
+        // Very small delay between batches to avoid overwhelming the system
         if (mounted && i + batchSize < configsToPing.length) {
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future.delayed(const Duration(milliseconds: 50)); // Reduced delay
         }
       }
 
@@ -460,6 +477,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
           SnackBar(
             content: Text('Error testing all servers: $e'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -504,7 +522,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       final result = await AutoSelectUtil.runAutoSelect(
         configs,
         _v2rayService,
-        (message) {
+        onStatusUpdate: (message) {
           // Update status
           if (mounted) {
             try {
@@ -642,23 +660,24 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   }
 
   // New helper method to ping a single server and return the result
-  Future<int?> _processBatchPingTask(V2RayConfig config) async {
+  Future<int> _processBatchPingTask(V2RayConfig config) async {
     // Early return if widget unmounted
     if (!mounted || _cancelPingTasks[config.id] == true) {
-      return null;
+      return -1;
     }
 
     try {
       // Ping the server with timeout
-      int? ping;
+      int ping;
       try {
-        ping = await _pingServer(config).timeout(
+        final result = await _pingServer(config).timeout(
           const Duration(seconds: 8),
           onTimeout: () {
             debugPrint('Ping task timeout for server ${config.remark}');
             return -1; // Return -1 on timeout
           },
         );
+        ping = result;
       } catch (e) {
         if (e.toString().contains('timeout')) {
           debugPrint('Timeout in ping task for ${config.remark}: $e');
@@ -813,14 +832,30 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
     List<V2RayConfig> filteredConfigs = [];
     if (_selectedFilter == 'All') {
       filteredConfigs = List.from(configs);
+      debugPrint('All tab: showing ${filteredConfigs.length} configs');
     } else if (_selectedFilter == 'Local') {
       // Filter configs that don't belong to any subscription
       final allSubscriptionConfigIds = subscriptions
           .expand((sub) => sub.configIds)
           .toSet();
+      
+      // Debug print to see what's happening
+      debugPrint('Local tab filtering: Total configs: ${configs.length}, Subscription config IDs: ${allSubscriptionConfigIds.length}');
+      debugPrint('Subscription config IDs: $allSubscriptionConfigIds');
+      
       filteredConfigs = configs
-          .where((config) => !allSubscriptionConfigIds.contains(config.id))
+          .where((config) {
+            final isLocal = !allSubscriptionConfigIds.contains(config.id);
+            if (!isLocal) {
+              debugPrint('Config ${config.remark} (${config.id}) is NOT local (belongs to subscription)');
+            } else {
+              debugPrint('Config ${config.remark} (${config.id}) IS local');
+            }
+            return isLocal;
+          })
           .toList();
+      
+      debugPrint('Local tab showing ${filteredConfigs.length} configs');
     } else {
       final subscription = subscriptions.firstWhere(
         (sub) => sub.name == _selectedFilter,
@@ -835,6 +870,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       filteredConfigs = configs
           .where((config) => subscription.configIds.contains(config.id))
           .toList();
+      debugPrint('Subscription tab "${_selectedFilter}": showing ${filteredConfigs.length} configs');
     }
 
     // Store original order when not sorting
@@ -1384,7 +1420,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                                             decoration: BoxDecoration(
                                               color: _getConfigTypeColor(
                                                 config.configType,
-                                              ).withOpacity(0.2),
+                                              ).withValues(alpha: 0.2),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
@@ -1409,7 +1445,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                                             ),
                                             decoration: BoxDecoration(
                                               color: Colors.blueGrey
-                                                  .withOpacity(0.2),
+                                                  .withValues(alpha: 0.2),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),

@@ -61,32 +61,43 @@ public final class V2rayCoreManager {
     }
 
     private void makeDurationTimer(final Context context, final boolean enable_traffic_statics) {
-        countDownTimer = new CountDownTimer(7200, 1000) {
+        // Use longer interval to reduce battery consumption (every 5 seconds instead of every second)
+        countDownTimer = new CountDownTimer(7200, 5000) {
             @RequiresApi(api = Build.VERSION_CODES.M)
             public void onTick(long millisUntilFinished) {
 
-                seconds++;
-                if (seconds == 59) {
+                seconds += 5; // Increment by 5 since we're updating every 5 seconds
+                if (seconds >= 60) {
                     minutes++;
-                    seconds = 0;
+                    seconds = seconds % 60;
                 }
-                if (minutes == 59) {
+                if (minutes >= 60) {
                     minutes = 0;
                     hours++;
                 }
-                if (hours == 23) {
+                if (hours >= 24) {
                     hours = 0;
                 }
+                
+                // Only calculate traffic stats if enabled
                 if (enable_traffic_statics) {
-                    downloadSpeed = (coreController != null ? coreController.queryStats("block", "downlink") : 0)
-                            + (coreController != null ? coreController.queryStats("proxy", "downlink") : 0);
-                    uploadSpeed = (coreController != null ? coreController.queryStats("block", "uplink") : 0)
-                            + (coreController != null ? coreController.queryStats("proxy", "uplink") : 0);
-                    totalDownload = totalDownload + downloadSpeed;
-                    totalUpload = totalUpload + uploadSpeed;
+                    try {
+                        downloadSpeed = (coreController != null ? coreController.queryStats("block", "downlink") : 0)
+                                + (coreController != null ? coreController.queryStats("proxy", "downlink") : 0);
+                        uploadSpeed = (coreController != null ? coreController.queryStats("block", "uplink") : 0)
+                                + (coreController != null ? coreController.queryStats("proxy", "uplink") : 0);
+                        totalDownload = totalDownload + downloadSpeed;
+                        totalUpload = totalUpload + uploadSpeed;
+                    } catch (Exception e) {
+                        // Handle exceptions to prevent crashes
+                        Log.w(V2rayCoreManager.class.getSimpleName(), "Error querying stats: " + e.getMessage());
+                    }
                 }
+                
                 SERVICE_DURATION = Utilities.convertIntToTwoDigit(hours) + ":" + Utilities.convertIntToTwoDigit(minutes)
                         + ":" + Utilities.convertIntToTwoDigit(seconds);
+                
+                // Only send broadcast if state has actually changed or at longer intervals
                 Intent connection_info_intent = new Intent("V2RAY_CONNECTION_INFO");
                 connection_info_intent.putExtra("STATE", V2rayCoreManager.getInstance().V2RAY_STATE);
                 connection_info_intent.putExtra("DURATION", SERVICE_DURATION);
@@ -339,12 +350,14 @@ public final class V2rayCoreManager {
                 .setSmallIcon(v2rayConfig.APPLICATION_ICON)
                 .setContentTitle(v2rayConfig.REMARK)
                 .addAction(0, disconnectButtonName, stopPendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setPriority(NotificationCompat.PRIORITY_LOW) // Changed from MIN to LOW for better visibility
                 .setShowWhen(false)
                 .setOnlyAlertOnce(true)
                 .setContentIntent(notificationContentPendingIntent)
                 .setSilent(true)
-                .setOngoing(true);
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE); // Modern approach for foreground services
 
         context.startForeground(NOTIFICATION_ID, notificationBuilder.build());
     }

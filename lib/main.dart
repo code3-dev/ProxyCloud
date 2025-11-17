@@ -10,6 +10,7 @@ import 'screens/main_navigation_screen.dart';
 import 'screens/privacy_welcome_screen.dart';
 import 'services/update_service.dart';
 import 'theme/app_theme.dart';
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final UpdateService _updateService = UpdateService();
+  Timer? _cleanupTimer;
+  WallpaperService? _wallpaperService;
 
   @override
   void initState() {
@@ -50,6 +53,22 @@ class _MyAppState extends State<MyApp> {
     // Check for updates after the app is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkForUpdates();
+      _startPeriodicCleanup();
+    });
+  }
+
+  /// Start a periodic cleanup task to prevent app size bloat
+  void _startPeriodicCleanup() {
+    // Run cleanup every 6 hours
+    _cleanupTimer = Timer.periodic(const Duration(hours: 6), (timer) async {
+      try {
+        // Perform cleanup using the service instance
+        if (_wallpaperService != null) {
+          await _wallpaperService!.cleanupAllOldWallpapers();
+        }
+      } catch (e) {
+        // Silently ignore cleanup errors to avoid disturbing the user
+      }
     });
   }
 
@@ -61,6 +80,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    _cleanupTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -68,7 +93,10 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (context) => V2RayProvider()),
         ChangeNotifierProvider(create: (context) => TelegramProxyProvider()),
         ChangeNotifierProvider(
-          create: (context) => WallpaperService()..initialize(),
+          create: (context) {
+            _wallpaperService = WallpaperService()..initialize();
+            return _wallpaperService!;
+          },
         ),
       ],
       child: Consumer<LanguageProvider>(

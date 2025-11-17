@@ -51,6 +51,7 @@ dependencies:
   lottie: ^2.7.0
   flutter_animate: ^4.5.0
   cached_network_image: ^3.3.1
+  flutter_cache_manager: ^3.3.1
   intl: ^0.20.2
   webview_flutter: ^4.13.0
   file_picker: ^10.3.2

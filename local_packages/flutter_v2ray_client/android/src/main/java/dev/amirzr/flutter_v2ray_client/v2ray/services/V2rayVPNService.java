@@ -23,6 +23,7 @@ import java.io.FileDescriptor;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class V2rayVPNService extends VpnService implements V2rayServicesListener {
 
@@ -34,60 +35,116 @@ public class V2rayVPNService extends VpnService implements V2rayServicesListener
     @Override
     public void onCreate() {
         super.onCreate();
+        // Initialize the V2Ray core manager
         V2rayCoreManager.getInstance().setUpListener(this);
+        
+        // Reset state when service is created
+        isRunning = false;
+        process = null;
+        mInterface = null;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         AppConfigs.V2RAY_SERVICE_COMMANDS startCommand = (AppConfigs.V2RAY_SERVICE_COMMANDS) intent.getSerializableExtra("COMMAND");
-        if (startCommand.equals(AppConfigs.V2RAY_SERVICE_COMMANDS.START_SERVICE)) {
-            v2rayConfig = (V2rayConfig) intent.getSerializableExtra("V2RAY_CONFIG");
-            if (v2rayConfig == null) {
-                this.onDestroy();
-            }
-            if (V2rayCoreManager.getInstance().isV2rayCoreRunning()) {
-                V2rayCoreManager.getInstance().stopCore();
-            }
-            if (V2rayCoreManager.getInstance().startCore(v2rayConfig)) {
-                Log.e(V2rayProxyOnlyService.class.getSimpleName(), "onStartCommand success => v2ray core started.");
-            } else {
-                this.onDestroy();
-            }
-        } else if (startCommand.equals(AppConfigs.V2RAY_SERVICE_COMMANDS.STOP_SERVICE)) {
-            V2rayCoreManager.getInstance().stopCore();
-            AppConfigs.V2RAY_CONFIG = null;
-            stopAllProcess();
-        } else if (startCommand.equals(AppConfigs.V2RAY_SERVICE_COMMANDS.MEASURE_DELAY)) {
-            new Thread(() -> {
-                Intent sendB = new Intent("CONNECTED_V2RAY_SERVER_DELAY");
-                sendB.putExtra("DELAY", String.valueOf(V2rayCoreManager.getInstance().getConnectedV2rayServerDelay()));
-                sendBroadcast(sendB);
-            }, "MEASURE_CONNECTED_V2RAY_SERVER_DELAY").start();
-        } else {
-            this.onDestroy();
+        if (startCommand == null) {
+            // Handle null command gracefully
+            return START_NOT_STICKY; // Changed from START_STICKY to reduce unnecessary restarts
         }
-        return START_STICKY;
+        
+        switch (startCommand) {
+            case START_SERVICE:
+                v2rayConfig = (V2rayConfig) intent.getSerializableExtra("V2RAY_CONFIG");
+                if (v2rayConfig == null) {
+                    this.onDestroy();
+                    return START_NOT_STICKY;
+                }
+                if (V2rayCoreManager.getInstance().isV2rayCoreRunning()) {
+                    V2rayCoreManager.getInstance().stopCore();
+                }
+                if (V2rayCoreManager.getInstance().startCore(v2rayConfig)) {
+                    Log.i(V2rayProxyOnlyService.class.getSimpleName(), "onStartCommand success => v2ray core started."); // Changed from Log.e to Log.i
+                } else {
+                    this.onDestroy();
+                    return START_NOT_STICKY;
+                }
+                break;
+                
+            case STOP_SERVICE:
+                V2rayCoreManager.getInstance().stopCore();
+                AppConfigs.V2RAY_CONFIG = null;
+                stopAllProcess();
+                return START_NOT_STICKY; // Service should not restart after explicit stop
+                
+            case MEASURE_DELAY:
+                new Thread(() -> {
+                    try {
+                        Intent sendB = new Intent("CONNECTED_V2RAY_SERVER_DELAY");
+                        sendB.putExtra("DELAY", String.valueOf(V2rayCoreManager.getInstance().getConnectedV2rayServerDelay()));
+                        sendBroadcast(sendB);
+                    } catch (Exception e) {
+                        Log.w("V2RAY_SERVICE", "Error measuring delay: " + e.getMessage());
+                    }
+                }, "MEASURE_CONNECTED_V2RAY_SERVER_DELAY").start();
+                break;
+                
+            default:
+                this.onDestroy();
+                return START_NOT_STICKY;
+        }
+        
+        return START_NOT_STICKY; // Changed from START_STICKY to reduce battery drain
     }
 
     private void stopAllProcess() {
-        stopForeground(true);
+        // Set flag first to prevent any restart attempts
         isRunning = false;
+        
+        // Stop foreground service properly
+        stopForeground(true);
+        
+        // Destroy tun2socks process if running
         if (process != null) {
-            process.destroy();
+            try {
+                // Try graceful shutdown first
+                process.destroy();
+                // Wait a bit for graceful shutdown
+                if (!process.waitFor(1, TimeUnit.SECONDS)) {
+                    // Force destroy if not shutting down gracefully
+                    process.destroyForcibly();
+                }
+            } catch (Exception e) {
+                Log.w("VPN_SERVICE", "Error destroying tun2socks process: " + e.getMessage());
+                // Force destroy as last resort
+                try {
+                    process.destroyForcibly();
+                } catch (Exception ignored) {
+                }
+            } finally {
+                process = null;
+            }
         }
+        
+        // Stop V2Ray core
         V2rayCoreManager.getInstance().stopCore();
+        
+        // Close VPN interface
+        if (mInterface != null) {
+            try {
+                mInterface.close();
+            } catch (Exception e) {
+                Log.w("VPN_SERVICE", "Error closing VPN interface: " + e.getMessage());
+            } finally {
+                mInterface = null;
+            }
+        }
+        
+        // Stop the service itself
         try {
             stopSelf();
         } catch (Exception e) {
-            //ignore
-            Log.e("CANT_STOP", "SELF");
+            Log.e("VPN_SERVICE", "Error stopping self: " + e.getMessage());
         }
-        try {
-            mInterface.close();
-        } catch (Exception e) {
-            // ignored
-        }
-
     }
 
     private void setup() {
@@ -117,25 +174,32 @@ public class V2rayVPNService extends VpnService implements V2rayServicesListener
                 try {
                     builder.addDisallowedApplication(v2rayConfig.BLOCKED_APPS.get(i));
                 } catch (Exception e) {
-                    //ignore
+                    // Log the error but continue
+                    Log.w("VPN_SERVICE", "Failed to add blocked app: " + e.getMessage());
                 }
             }
         }
+        
+        // Optimize DNS configuration
         try {
             JSONObject json = new JSONObject(v2rayConfig.V2RAY_FULL_JSON_CONFIG);
             if (json.has("dns")) {
                 JSONObject dnsObject = json.getJSONObject("dns");
                 if (dnsObject.has("servers")) {
                     JSONArray serversArray = dnsObject.getJSONArray("servers");
-                    for (int i = 0; i < serversArray.length(); i++) {
+                    // Limit to first 2 DNS servers to reduce battery consumption
+                    int dnsServersAdded = 0;
+                    for (int i = 0; i < serversArray.length() && dnsServersAdded < 2; i++) {
                         try {
                             Object entry = serversArray.get(i);
                             if (entry instanceof String) {
                                 builder.addDnsServer((String) entry);
+                                dnsServersAdded++;
                             } else if (entry instanceof JSONObject) {
                                 JSONObject obj = (JSONObject) entry;
                                 if (obj.has("address")) {
                                     builder.addDnsServer(obj.getString("address"));
+                                    dnsServersAdded++;
                                 }
                             }
                         } catch (Exception ignored) {
@@ -150,25 +214,27 @@ public class V2rayVPNService extends VpnService implements V2rayServicesListener
             } catch (Exception ignored) {
             }
             try {
-                builder.addDnsServer("1.0.0.1");
-            } catch (Exception ignored) {
-            }
-            try {
                 builder.addDnsServer("8.8.8.8");
             } catch (Exception ignored) {
             }
-            try {
-                builder.addDnsServer("8.8.4.4");
-            } catch (Exception ignored) {
-            }
         }
+        
         try {
-            mInterface.close();
+            if (mInterface != null) {
+                mInterface.close();
+            }
         } catch (Exception e) {
-            //ignore
+            // Log but continue
+            Log.w("VPN_SERVICE", "Failed to close previous interface: " + e.getMessage());
         }
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false);
+        }
+        
+        // Add battery optimization for VPN
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            builder.setUnderlyingNetworks(null); // Use system default network selection
         }
 
         try {
@@ -190,24 +256,39 @@ public class V2rayVPNService extends VpnService implements V2rayServicesListener
                 "--tunmtu", "1500",
                 "--sock-path", "sock_path",
                 "--enable-udprelay",
-                "--loglevel", "error"));
+                "--loglevel", "none")); // Changed from "error" to "none" to reduce logging overhead
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(cmd);
             processBuilder.redirectErrorStream(true);
             process = processBuilder.directory(getApplicationContext().getFilesDir()).start();
+            
+            // Use a more efficient approach for monitoring the process
             new Thread(() -> {
                 try {
-                    process.waitFor();
-                    if (isRunning) {
+                    int exitCode = process.waitFor();
+                    Log.d("VPN_SERVICE", "Tun2socks process exited with code: " + exitCode);
+                    if (isRunning && exitCode != 0) {
+                        // Only restart if there was an error and service should still be running
+                        // Add a small delay to prevent rapid restart loops
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        }
                         runTun2socks();
                     }
                 } catch (InterruptedException e) {
-                    //ignore
+                    Log.d("VPN_SERVICE", "Tun2socks thread interrupted");
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    Log.w("VPN_SERVICE", "Error in tun2socks thread: " + e.getMessage());
                 }
             }, "Tun2socks_Thread").start();
+            
             sendFileDescriptor();
         } catch (Exception e) {
-            Log.e("VPN_SERVICE", "FAILED=>", e);
+            Log.e("VPN_SERVICE", "FAILED to start tun2socks=>", e);
             this.onDestroy();
         }
     }
@@ -247,6 +328,10 @@ public class V2rayVPNService extends VpnService implements V2rayServicesListener
 
     @Override
     public void onDestroy() {
+        // Ensure all processes are stopped when service is destroyed
+        if (isRunning) {
+            stopAllProcess();
+        }
         super.onDestroy();
     }
 

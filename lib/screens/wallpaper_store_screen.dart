@@ -129,30 +129,28 @@ class _WallpaperStoreScreenState extends State<WallpaperStoreScreen> {
 
   Future<void> _setAsWallpaper(String url) async {
     try {
-      // Set as wallpaper using the wallpaper service
       final wallpaperService = Provider.of<WallpaperService>(
         context,
         listen: false,
       );
 
-      // Use the existing method to set wallpaper from URL
+      // Use the service method which handles cleanup automatically
       final success = await wallpaperService.setWallpaperFromUrl(url);
-
-      if (success) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.tr(TranslationKeys.wallpaperStoreSetSuccess)),
-            backgroundColor: AppTheme.primaryBlue,
-          ),
-        );
-
-        // Go back to the previous screen
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      } else {
+      if (!success) {
         throw Exception('Failed to set wallpaper from URL');
+      }
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr(TranslationKeys.wallpaperStoreSetSuccess)),
+          backgroundColor: AppTheme.primaryBlue,
+        ),
+      );
+
+      // Go back to the previous screen
+      if (mounted) {
+        Navigator.of(context).pop();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

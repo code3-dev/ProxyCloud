@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class WallpaperService extends ChangeNotifier {
   static const String _wallpaperPathKey = 'home_wallpaper_path';
@@ -34,6 +36,9 @@ class WallpaperService extends ChangeNotifier {
       }
     }
 
+    // Clean up old wallpapers on startup to prevent app size bloat
+    await cleanupAllOldWallpapers();
+
     notifyListeners();
   }
 
@@ -44,6 +49,9 @@ class WallpaperService extends ChangeNotifier {
       final XFile? media = await picker.pickMedia();
 
       if (media == null) return false;
+
+      // Clean up old wallpapers before setting new one
+      await cleanupAllOldWallpapers();
 
       // Get app documents directory
       final Directory appDir = await getApplicationDocumentsDirectory();
@@ -93,6 +101,9 @@ class WallpaperService extends ChangeNotifier {
     }
 
     await _saveWallpaperSettings(null, false);
+    
+    // Clean up any remaining old wallpapers
+    await cleanupAllOldWallpapers();
   }
 
   /// Save wallpaper settings to SharedPreferences
@@ -164,9 +175,74 @@ class WallpaperService extends ChangeNotifier {
     }
   }
 
+  /// Clear cached network images to free up space
+  Future<void> clearCachedImages() async {
+    try {
+      // Clear all cached network images using the default cache manager
+      await DefaultCacheManager().emptyCache();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error clearing cached images: $e');
+      }
+    }
+  }
+
+  /// Comprehensive cleanup of all wallpaper-related files and directories
+  Future<void> cleanupAllOldWallpapers() async {
+    try {
+      // Clear cached network images to free up space
+      await clearCachedImages();
+      
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String wallpapersDir = '${appDir.path}/wallpapers';
+      final Directory wallpaperDirectory = Directory(wallpapersDir);
+
+      if (!await wallpaperDirectory.exists()) return;
+
+      final List<FileSystemEntity> files = await wallpaperDirectory
+          .list()
+          .toList();
+
+      for (final FileSystemEntity entity in files) {
+        if (entity is File) {
+          // Don't delete the current wallpaper
+          if (_wallpaperPath != null && entity.path != _wallpaperPath) {
+            await entity.delete();
+          }
+        } else if (entity is Directory) {
+          // Delete any subdirectories that might contain cached wallpapers
+          await entity.delete(recursive: true);
+        }
+      }
+      
+      // Also clean up any loose wallpaper files in the app directory (legacy)
+      final List<FileSystemEntity> appDirContents = await appDir.list().toList();
+      for (final FileSystemEntity entity in appDirContents) {
+        if (entity is File) {
+          final String fileName = entity.path.split('/').last;
+          if (fileName.startsWith('wallpaper_') && 
+              (fileName.endsWith('.jpg') || fileName.endsWith('.png') || 
+               fileName.endsWith('.jpeg') || fileName.endsWith('.gif'))) {
+            // Only delete if it's not the current wallpaper
+            if (_wallpaperPath == null || entity.path != _wallpaperPath) {
+              await entity.delete();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in comprehensive wallpaper cleanup: $e');
+      }
+    }
+  }
+
   /// Set wallpaper from URL
   Future<bool> setWallpaperFromUrl(String url) async {
     try {
+      // Clean up old wallpapers before setting new one
+      await cleanupAllOldWallpapers();
+      
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

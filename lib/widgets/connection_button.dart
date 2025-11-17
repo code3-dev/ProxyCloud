@@ -95,7 +95,7 @@ class _ConnectionButtonState extends State<ConnectionButton> {
       final result = await AutoSelectUtil.runAutoSelect(
         provider.configs,
         provider.v2rayService,
-        (message) {
+        onStatusUpdate: (message) {
           // Update status in the dialog
           _autoSelectStatusStream.add(message);
         },

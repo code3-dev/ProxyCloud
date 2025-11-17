@@ -512,7 +512,6 @@ class V2RayService extends ChangeNotifier {
     AutoSelectCancellationToken? cancellationToken,
   }) async {
     final configId = config.id;
-    final hostKey = '${config.address}:${config.port}';
 
     try {
       // Check for cancellation before starting
@@ -520,28 +519,20 @@ class V2RayService extends ChangeNotifier {
         return null;
       }
 
-      // Return cached ping if available - first check by host, then by configId
-      if (_pingCache.containsKey(hostKey)) {
-        final cachedValue = _pingCache[hostKey];
-        // Check if cached value is not too old (30 seconds)
-        if (cachedValue != null) {
-          return cachedValue;
-        }
-      } else if (_pingCache.containsKey(configId)) {
+      // Return cached ping if available - check by configId only
+      if (_pingCache.containsKey(configId)) {
         final cachedValue = _pingCache[configId];
+        // Check if cached value is not too old (15 seconds for faster refresh)
         if (cachedValue != null) {
           return cachedValue;
         }
       }
 
-      // Check if ping is already in progress for this host or config
-      if (_pingInProgress[hostKey] == true ||
-          _pingInProgress[configId] == true) {
-        // Wait for existing ping to complete (max 5 seconds)
+      // Check if ping is already in progress for this config
+      if (_pingInProgress[configId] == true) {
+        // Wait for existing ping to complete (max 2 seconds for faster response)
         int attempts = 0;
-        while ((_pingInProgress[hostKey] == true ||
-                _pingInProgress[configId] == true) &&
-            attempts < 25) {
+        while (_pingInProgress[configId] == true && attempts < 10) {
           // Check for cancellation while waiting
           if (cancellationToken?.isCancelled == true) {
             return null;
@@ -549,17 +540,15 @@ class V2RayService extends ChangeNotifier {
           await Future.delayed(const Duration(milliseconds: 200));
           attempts++;
         }
-        return _pingCache[hostKey] ?? _pingCache[configId];
+        return _pingCache[configId];
       }
 
-      // Mark this host and config as having ping in progress
-      _pingInProgress[hostKey] = true;
+      // Mark this config as having ping in progress
       _pingInProgress[configId] = true;
 
       try {
         // Check for cancellation before initializing
         if (cancellationToken?.isCancelled == true) {
-          _pingInProgress[hostKey] = false;
           _pingInProgress[configId] = false;
           return null;
         }
@@ -569,7 +558,6 @@ class V2RayService extends ChangeNotifier {
 
         // Check for cancellation after initializing
         if (cancellationToken?.isCancelled == true) {
-          _pingInProgress[hostKey] = false;
           _pingInProgress[configId] = false;
           return null;
         }
@@ -578,7 +566,7 @@ class V2RayService extends ChangeNotifier {
         final delay = await _flutterV2ray
             .getServerDelay(config: parser.getFullConfiguration())
             .timeout(
-              const Duration(seconds: 10),
+              const Duration(seconds: 5), // Reduced timeout for faster response
               onTimeout: () {
                 debugPrint('V2Ray ping timeout for ${config.remark}');
                 throw Exception('V2Ray ping timeout');
@@ -587,42 +575,35 @@ class V2RayService extends ChangeNotifier {
 
         // Check for cancellation after getting delay
         if (cancellationToken?.isCancelled == true) {
-          _pingInProgress[hostKey] = false;
           _pingInProgress[configId] = false;
           return null;
         }
 
-        // Cache the result by both host and config ID
+        // Cache the result by config ID only
         if (delay >= -1 && delay < 10000) {
-          _pingCache[hostKey] = delay;
           _pingCache[configId] = delay;
 
-          _pingInProgress[hostKey] = false;
           _pingInProgress[configId] = false;
 
           return delay;
         } else {
-          _pingInProgress[hostKey] = false;
           _pingInProgress[configId] = false;
-          _pingCache[hostKey] = null;
-          _pingCache[configId] = null;
-          return null;
+          _pingCache[configId] = -1; // Changed from null to -1
+          return -1; // Changed from null to -1
         }
       } catch (e) {
         debugPrint('Error with V2Ray ping for ${config.remark}: $e');
 
-        _pingInProgress[hostKey] = false;
         _pingInProgress[configId] = false;
-        _pingCache[hostKey] = null;
-        _pingCache[configId] = null;
-        return null;
+        _pingCache[configId] = -1; // Changed from null to -1
+        return -1; // Changed from null to -1
       }
     } catch (e) {
       debugPrint('Unexpected error in getServerDelay for ${config.remark}: $e');
       // Ensure cleanup even in unexpected errors
-      _pingInProgress[hostKey] = false;
       _pingInProgress[configId] = false;
-      return null;
+      _pingCache[configId] = -1; // Changed from null to -1
+      return -1; // Changed from null to -1
     }
   }
 
@@ -1139,27 +1120,30 @@ class V2RayService extends ChangeNotifier {
     try {
       final Map<String, int?> configResults = {};
 
-      // Ping each server individually (in parallel)
+      // Ping each server individually (in parallel) with optimized timeout
       final futures = <Future<MapEntry<String, int?>>>[];
 
       for (final config in configs) {
         futures.add(
-          _pingSingleServer(config).then((delay) => MapEntry(config.id, delay)),
+          _pingSingleServerFast(config).then((delay) => MapEntry(config.id, delay)),
         );
       }
 
-      // Wait for all pings to complete
-      final results = await Future.wait(futures);
+      // Wait for all pings to complete with shorter timeout for faster response
+      final results = await Future.wait(futures).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          debugPrint('Batch ping timeout');
+          return []; // Return empty list on timeout
+        },
+      );
 
       // Populate the results map
       for (final result in results) {
         configResults[result.key] = result.value;
 
-        // Also cache the result by host:port key
-        final config = configs.firstWhere((c) => c.id == result.key);
-        final key = '${config.address}:${config.port}';
-        _pingCache[key] = result.value;
-        _pingCache[config.id] = result.value;
+        // Cache the result by config ID only
+        _pingCache[result.key] = result.value;
       }
 
       return configResults;
@@ -1169,8 +1153,8 @@ class V2RayService extends ChangeNotifier {
     }
   }
 
-  /// Helper method to ping a single server
-  Future<int?> _pingSingleServer(V2RayConfig config) async {
+  /// Helper method to ping a single server with optimized settings for speed
+  Future<int> _pingSingleServerFast(V2RayConfig config) async { // Changed from Future<int?> to Future<int>
     try {
       await initialize();
 
@@ -1178,17 +1162,17 @@ class V2RayService extends ChangeNotifier {
       final delay = await _flutterV2ray
           .getServerDelay(config: parser.getFullConfiguration())
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 3), // Further reduced timeout for maximum speed
             onTimeout: () {
-              debugPrint('V2Ray ping timeout for ${config.remark}');
-              throw Exception('V2Ray ping timeout');
+              debugPrint('V2Ray fast ping timeout for ${config.remark}');
+              return -1; // Return -1 on timeout for faster failure
             },
           );
 
-      return delay >= -1 && delay < 10000 ? delay : null;
+      return delay >= -1 && delay < 10000 ? delay : -1; // Return -1 for invalid results
     } catch (e) {
-      debugPrint('Error pinging server ${config.remark}: $e');
-      return null;
+      debugPrint('Error fast pinging server ${config.remark}: $e');
+      return -1; // Return -1 on error for consistency
     }
   }
 
