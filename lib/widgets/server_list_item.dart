@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/v2ray_config.dart';
 import '../providers/v2ray_provider.dart';
 import '../providers/language_provider.dart';
@@ -8,7 +9,7 @@ import '../utils/app_localizations.dart';
 class ServerListItem extends StatefulWidget {
   final V2RayConfig config;
 
-  const ServerListItem({Key? key, required this.config}) : super(key: key);
+  const ServerListItem({super.key, required this.config});
 
   @override
   State<ServerListItem> createState() => _ServerListItemState();
@@ -168,7 +169,7 @@ class _ServerListItemState extends State<ServerListItem> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blueGrey.withOpacity(0.2),
+                          color: Colors.blueGrey.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

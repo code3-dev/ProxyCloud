@@ -10,7 +10,7 @@ import '../providers/v2ray_provider.dart';
 const String _pingBatchSizeKey = 'ping_batch_size';
 
 class VpnSettingsScreen extends StatefulWidget {
-  const VpnSettingsScreen({Key? key}) : super(key: key);
+  const VpnSettingsScreen({super.key});
 
   @override
   State<VpnSettingsScreen> createState() => _VpnSettingsScreenState();
@@ -51,8 +51,7 @@ class _VpnSettingsScreenState extends State<VpnSettingsScreen> {
           prefs.getBool('bypass_subnets_enabled') ?? false;
       final bool savedDnsEnabled = prefs.getBool('custom_dns_enabled') ?? false;
       final String savedDnsServers =
-          prefs.getString('custom_dns_servers') ??
-          '8.8.8.8\n8.8.4.4';
+          prefs.getString('custom_dns_servers') ?? '8.8.8.8\n8.8.4.4';
       final int savedPingBatchSize =
           prefs.getInt(_pingBatchSizeKey) ?? 5; // Default to 5
       final bool savedProxyModeEnabled =
@@ -247,7 +246,7 @@ class _VpnSettingsScreenState extends State<VpnSettingsScreen> {
                                       });
                                     },
                                     // Updated deprecated activeThumbColor to activeColor
-                                    activeColor: AppTheme.primaryGreen,
+                                    activeThumbColor: AppTheme.primaryGreen,
                                   ),
                                 ],
                               ),
@@ -365,7 +364,7 @@ class _VpnSettingsScreenState extends State<VpnSettingsScreen> {
                                       // Update the provider's proxy mode state
                                       v2rayProvider.toggleProxyMode(value);
                                     },
-                                    activeColor: AppTheme.primaryGreen,
+                                    activeThumbColor: AppTheme.primaryGreen,
                                   ),
                                 ],
                               ),
@@ -466,7 +465,7 @@ class _VpnSettingsScreenState extends State<VpnSettingsScreen> {
                                       });
                                     },
                                     // Updated deprecated activeThumbColor to activeColor
-                                    activeColor: AppTheme.primaryGreen,
+                                    activeThumbColor: AppTheme.primaryGreen,
                                   ),
                                 ],
                               ),

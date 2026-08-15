@@ -298,8 +298,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
     final backgroundColor = isExitButton
         ? Colors.red.withValues(alpha: 0.1)
         : AppTheme.primaryBlue.withValues(alpha: 0.1);
-    final borderColor =
-        isExitButton ? Colors.red.withValues(alpha: 0.3) : Colors.transparent;
+    final borderColor = isExitButton
+        ? Colors.red.withValues(alpha: 0.3)
+        : Colors.transparent;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
@@ -307,10 +308,7 @@ class _ToolsScreenState extends State<ToolsScreen> {
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: borderColor,
-          width: isExitButton ? 1 : 0,
-        ),
+        side: BorderSide(color: borderColor, width: isExitButton ? 1 : 0),
       ),
       child: InkWell(
         onTap: onTap,
@@ -345,17 +343,15 @@ class _ToolsScreenState extends State<ToolsScreen> {
                       description,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isExitButton ? Colors.redAccent : Colors.grey[400],
+                        color: isExitButton
+                            ? Colors.redAccent
+                            : Colors.grey[400],
                       ),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: iconColor,
-                size: 16,
-              ),
+              Icon(Icons.arrow_forward_ios, color: iconColor, size: 16),
             ],
           ),
         ),
@@ -428,7 +424,9 @@ class _ToolsScreenState extends State<ToolsScreen> {
                 const Spacer(),
                 ElevatedButton(
                   onPressed: () => _launchUrl(update.url.trim()),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryBlue),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                  ),
                   child: Text(context.tr('tools.update_now')),
                 ),
               ],

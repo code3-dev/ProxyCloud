@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:flutter_v2ray_client/url/url.dart';
 
@@ -41,7 +43,7 @@ class VlessURL extends V2RayURL {
       shortId: uri.queryParameters['sid'] ?? '',
       spiderX: uri.queryParameters['spx'] ?? '',
     );
-    
+
     // Handle xhttp specific settings
     _populateXhttpSettings();
   }
@@ -67,7 +69,7 @@ class VlessURL extends V2RayURL {
     if (transport == 'xhttp') {
       final extraParam = uri.queryParameters['extra'];
       Map<String, dynamic>? extraSettings;
-      
+
       if (extraParam != null) {
         try {
           // Decode and parse the extra parameter which contains JSON
@@ -78,19 +80,19 @@ class VlessURL extends V2RayURL {
           print('Failed to parse xhttp extra settings: $e');
         }
       }
-      
+
       // Create xhttpSettings object
       final xhttpSettings = <String, dynamic>{
         'host': uri.queryParameters['host'] ?? '',
         'path': uri.queryParameters['path'] ?? '/',
         'mode': uri.queryParameters['mode'] ?? 'auto',
       };
-      
+
       // Add extra settings if available
       if (extraSettings != null) {
         xhttpSettings['extra'] = extraSettings;
       }
-      
+
       // Add xhttpSettings to streamSetting
       streamSetting['xhttpSettings'] = xhttpSettings;
     }

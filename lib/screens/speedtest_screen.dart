@@ -1,10 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../theme/app_theme.dart';
 
 class SpeedtestScreen extends StatefulWidget {
-  const SpeedtestScreen({Key? key}) : super(key: key);
+  const SpeedtestScreen({super.key});
 
   @override
   State<SpeedtestScreen> createState() => _SpeedtestScreenState();
@@ -65,9 +68,8 @@ class _SpeedtestScreenState extends State<SpeedtestScreen> {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Could not launch $url')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Could not launch $url')));
       }
     }
   }

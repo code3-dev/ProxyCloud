@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../theme/app_theme.dart';
 import 'main_navigation_screen.dart';
 import '../utils/app_localizations.dart';
@@ -12,7 +14,7 @@ import '../providers/language_provider.dart';
 import '../widgets/error_snackbar.dart';
 
 class PrivacyWelcomeScreen extends StatefulWidget {
-  const PrivacyWelcomeScreen({Key? key}) : super(key: key);
+  const PrivacyWelcomeScreen({super.key});
 
   @override
   State<PrivacyWelcomeScreen> createState() => _PrivacyWelcomeScreenState();
@@ -21,8 +23,7 @@ class PrivacyWelcomeScreen extends StatefulWidget {
 class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages =
-      7; // Reduced to remove background access page, now accommodating channels, sponsors, and Persian Gulf pages
+  final int _totalPages = 7; // Reduced to remove background access page, now accommodating channels, sponsors, and Persian Gulf pages
   bool _acceptedPrivacy = false;
 
   AppLanguage? _selectedLanguage;
@@ -175,7 +176,7 @@ class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
             end: Alignment.bottomCenter,
             colors: [
               AppTheme.primaryDark,
-              AppTheme.primaryDark.withOpacity(0.8),
+              AppTheme.primaryDark.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -242,7 +243,7 @@ class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
                                 shape: BoxShape.circle,
                                 color: _currentPage == index
                                     ? AppTheme.primaryGreen
-                                    : Colors.grey.withOpacity(0.5),
+                                    : Colors.grey.withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -264,7 +265,7 @@ class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               disabledBackgroundColor: AppTheme.primaryGreen
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                             ),
                             child: Text(
                               _currentPage == _totalPages - 1
@@ -373,7 +374,7 @@ class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? AppTheme.primaryGreen.withOpacity(0.3)
+                                  ? AppTheme.primaryGreen.withValues(alpha: 0.3)
                                   : AppTheme.cardDark,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(

@@ -1,12 +1,18 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  errors:
+    avoid_print: ignore
   exclude:
     - build/**
     - android/**
     - ios/**
     - example/ios/Flutter/App.framework/**
     - example/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:
@@ -44,7 +50,7 @@ linter:
     - prefer_const_declarations
     - prefer_constructors_over_static_methods
     - prefer_contains
-    - prefer_equal_for_default_values
+    # - prefer_equal_for_default_values
     - prefer_final_fields
     - prefer_final_in_for_each
     - prefer_final_locals

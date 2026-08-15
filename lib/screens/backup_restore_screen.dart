@@ -1,10 +1,14 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+
 import '../providers/language_provider.dart';
 import '../utils/app_localizations.dart';
 import '../theme/app_theme.dart';
@@ -85,12 +89,12 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     });
 
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (result == null || result.isEmpty) {
         setState(() {
           _statusMessage = context.tr(
             TranslationKeys.backupRestoreNoFileSelected,
@@ -99,7 +103,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         return;
       }
 
-      final file = File(result.files.single.path!);
+      final file = File(result.single.path!);
       final jsonString = await file.readAsString();
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
 

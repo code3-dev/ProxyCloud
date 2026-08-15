@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +13,7 @@ import '../utils/app_localizations.dart';
 import '../services/wallpaper_service.dart';
 
 class TelegramProxyScreen extends StatefulWidget {
-  const TelegramProxyScreen({Key? key}) : super(key: key);
+  const TelegramProxyScreen({super.key});
 
   @override
   State<TelegramProxyScreen> createState() => _TelegramProxyScreenState();
@@ -122,7 +124,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       color: isGlassBackground
-          ? AppTheme.cardDark.withOpacity(0.7)
+          ? AppTheme.cardDark.withValues(alpha: 0.7)
           : AppTheme.cardDark,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -151,7 +153,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.2),
+                    color: AppTheme.primaryBlue.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppTheme.primaryBlue, width: 1),
                   ),
@@ -177,7 +179,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -203,7 +205,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
+                      color: Colors.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -240,7 +242,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -265,7 +267,7 @@ class _TelegramProxyScreenState extends State<TelegramProxyScreen> {
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: proxy.uptime / 100,
-                        backgroundColor: Colors.grey.withOpacity(0.3),
+                        backgroundColor: Colors.grey.withValues(alpha: 0.3),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           proxy.uptime > 80
                               ? Colors.green

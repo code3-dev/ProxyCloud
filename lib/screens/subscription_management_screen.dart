@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,7 +11,7 @@ import '../widgets/error_snackbar.dart';
 import '../utils/app_localizations.dart';
 
 class SubscriptionManagementScreen extends StatefulWidget {
-  const SubscriptionManagementScreen({Key? key}) : super(key: key);
+  const SubscriptionManagementScreen({super.key});
 
   @override
   State<SubscriptionManagementScreen> createState() =>
@@ -32,16 +34,16 @@ class _SubscriptionManagementScreenState
 
   Future<void> _importFromFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['txt', 'json', 'yaml', 'yml'],
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (result == null || result.isEmpty) {
         return;
       }
 
-      final file = File(result.files.single.path!);
+      final file = File(result.single.path!);
       final content = await file.readAsString();
 
       // Parse the content as subscription configs
@@ -400,8 +402,6 @@ class _SubscriptionManagementScreenState
     }
   }
 
-
-
   Future<void> _updateAllSubscriptions(BuildContext context) async {
     final provider = Provider.of<V2RayProvider>(context, listen: false);
 
@@ -464,7 +464,9 @@ class _SubscriptionManagementScreenState
             builder: (context, provider, _) {
               return IconButton(
                 icon: const Icon(Icons.refresh_rounded),
-                onPressed: provider.isUpdatingSubscriptions ? null : () => _updateAllSubscriptions(context),
+                onPressed: provider.isUpdatingSubscriptions
+                    ? null
+                    : () => _updateAllSubscriptions(context),
                 tooltip: context.tr(
                   TranslationKeys.subscriptionManagementUpdateAll,
                 ),
@@ -671,14 +673,11 @@ class _SubscriptionManagementScreenState
                                   ),
 
                                   IconButton(
-                                    icon: Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                    ),
+                                    icon: Icon(Icons.delete, color: Colors.red),
                                     onPressed: () => _deleteSubscription(
-                                        context,
-                                        subscription,
-                                      ),
+                                      context,
+                                      subscription,
+                                    ),
                                     tooltip: context.tr(
                                       TranslationKeys
                                           .subscriptionManagementDelete,

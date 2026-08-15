@@ -1,7 +1,9 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../providers/v2ray_provider.dart';
+
 import '../providers/language_provider.dart';
 import '../utils/app_localizations.dart';
 import '../theme/app_theme.dart';
@@ -12,7 +14,7 @@ import 'tools_screen.dart';
 import 'store_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({Key? key}) : super(key: key);
+  const MainNavigationScreen({super.key});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -135,7 +137,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == 0
-                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.2)
                             : Colors.transparent,
                       ),
                       child: const Icon(Icons.vpn_key_rounded),
@@ -148,7 +150,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == 1
-                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.2)
                             : Colors.transparent,
                       ),
                       child: const Icon(Icons.telegram_rounded),
@@ -161,7 +163,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == 2
-                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.2)
                             : Colors.transparent,
                       ),
                       child: const Icon(Icons.storefront_rounded),
@@ -174,7 +176,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: _currentIndex == 3
-                            ? AppTheme.primaryBlue.withOpacity(0.2)
+                            ? AppTheme.primaryBlue.withValues(alpha: 0.2)
                             : Colors.transparent,
                       ),
                       child: const Icon(Icons.handyman_rounded),

@@ -1,11 +1,16 @@
+// ignore_for_file: unnecessary_underscores, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../theme/app_theme.dart';
 import '../services/v2ray_service.dart';
+
 import 'package:flutter/foundation.dart';
+
 import '../utils/app_localizations.dart';
+
 import 'dart:convert';
-import 'dart:typed_data';
 
 class PerAppTunnelScreen extends StatefulWidget {
   const PerAppTunnelScreen({super.key});

@@ -187,8 +187,8 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
                         color:
                             _statusMessage!.contains('Error') ||
                                 _statusMessage!.contains('failed')
-                            ? Colors.red.withOpacity(0.1)
-                            : AppTheme.primaryBlue.withOpacity(0.1),
+                            ? Colors.red.withValues(alpha: 0.1)
+                            : AppTheme.primaryBlue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color:
@@ -264,7 +264,7 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
                   _toggleGlassBackground(value);
                 });
               },
-              activeColor: AppTheme.primaryBlue,
+              activeThumbColor: AppTheme.primaryBlue,
             ),
           ],
         ),
@@ -552,8 +552,7 @@ class _WallpaperSettingsScreenState extends State<WallpaperSettingsScreen> {
 class FullScreenWallpaperViewer extends StatelessWidget {
   final String imagePath;
 
-  const FullScreenWallpaperViewer({Key? key, required this.imagePath})
-    : super(key: key);
+  const FullScreenWallpaperViewer({super.key, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {

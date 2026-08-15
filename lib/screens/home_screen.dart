@@ -1,7 +1,10 @@
+// ignore_for_file: body_might_complete_normally_catch_error, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+
 import '../providers/v2ray_provider.dart';
 import '../providers/language_provider.dart';
 import '../utils/app_localizations.dart';
@@ -16,7 +19,7 @@ import '../utils/auto_select_util.dart';
 import 'subscription_management_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -264,13 +267,17 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  AppTheme.primaryGreen,
+                ),
               ),
               const SizedBox(height: 16),
               Text(context.tr('server_selection.testing_servers')),
               const SizedBox(height: 8),
               StreamBuilder<String>(
-                stream: Stream.periodic(const Duration(milliseconds: 500), (count) {
+                stream: Stream.periodic(const Duration(milliseconds: 500), (
+                  count,
+                ) {
                   final messages = [
                     'Testing servers for fastest connection...',
                     'Analyzing server response times...',
@@ -281,7 +288,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 }),
                 builder: (context, snapshot) {
                   return Text(
-                    snapshot.data ?? 'Testing servers for fastest connection...',
+                    snapshot.data ??
+                        'Testing servers for fastest connection...',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   );
                 },
@@ -327,17 +335,15 @@ class _HomeScreenState extends State<HomeScreen> {
           result.selectedConfig!,
           provider.isProxyMode,
         );
-        final success = provider.errorMessage.isEmpty; // Check if connection was successful
+        final success =
+            provider.errorMessage.isEmpty; // Check if connection was successful
 
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  '${context.tr('server_selection.lowest_ping', parameters: {
-                    'server': result.selectedConfig!.remark,
-                    'ping': result.bestPing.toString(),
-                  })} - Connected!',
+                  '${context.tr('server_selection.lowest_ping', parameters: {'server': result.selectedConfig!.remark, 'ping': result.bestPing.toString()})} - Connected!',
                 ),
                 backgroundColor: AppTheme.connectedGreen,
                 duration: const Duration(seconds: 3),
@@ -347,10 +353,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  context.tr('server_selection.connect_failed', parameters: {
-                    'server': result.selectedConfig!.remark,
-                    'error': 'Connection failed',
-                  }),
+                  context.tr(
+                    'server_selection.connect_failed',
+                    parameters: {
+                      'server': result.selectedConfig!.remark,
+                      'error': 'Connection failed',
+                    },
+                  ),
                 ),
                 backgroundColor: Colors.red,
                 duration: const Duration(seconds: 3),
@@ -377,7 +386,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context).pop(); // Close dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${context.tr('server_selection.error_updating')}: $e'),
+            content: Text(
+              '${context.tr('server_selection.error_updating')}: $e',
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -422,41 +433,48 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context, provider, _) {
                       return IconButton(
                         icon: const Icon(Icons.refresh),
-                        onPressed: provider.isUpdatingSubscriptions ? null : () async {
-                          final v2rayProvider = Provider.of<V2RayProvider>(
-                            context,
-                            listen: false,
-                          );
+                        onPressed: provider.isUpdatingSubscriptions
+                            ? null
+                            : () async {
+                                final v2rayProvider =
+                                    Provider.of<V2RayProvider>(
+                                      context,
+                                      listen: false,
+                                    );
 
-                          // Show loading indicator
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                context.tr('home.updating_subscriptions'),
-                              ),
-                            ),
-                          );
+                                // Show loading indicator
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      context.tr('home.updating_subscriptions'),
+                                    ),
+                                  ),
+                                );
 
-                          // Update all subscriptions instead of just fetching servers
-                          await v2rayProvider.updateAllSubscriptions();
-                          v2rayProvider.fetchNotificationStatus();
+                                // Update all subscriptions instead of just fetching servers
+                                await v2rayProvider.updateAllSubscriptions();
+                                v2rayProvider.fetchNotificationStatus();
 
-                          // Show success message
-                          if (v2rayProvider.errorMessage.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  context.tr('home.subscriptions_updated'),
-                                ),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(v2rayProvider.errorMessage)),
-                            );
-                            v2rayProvider.clearError();
-                          }
-                        },
+                                // Show success message
+                                if (v2rayProvider.errorMessage.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        context.tr(
+                                          'home.subscriptions_updated',
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(v2rayProvider.errorMessage),
+                                    ),
+                                  );
+                                  v2rayProvider.clearError();
+                                }
+                              },
                         tooltip: context.tr(TranslationKeys.homeRefresh),
                       );
                     },
@@ -585,12 +603,12 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isGlassBackground
-                    ? AppTheme.cardDark.withOpacity(0.7)
+                    ? AppTheme.cardDark.withValues(alpha: 0.7)
                     : AppTheme.cardDark,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

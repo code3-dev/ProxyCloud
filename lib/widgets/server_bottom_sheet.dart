@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/v2ray_config.dart';
 import '../providers/v2ray_provider.dart';
 import '../providers/language_provider.dart';
@@ -14,12 +17,12 @@ class ServerBottomSheet extends StatefulWidget {
   final Future<void> Function(V2RayConfig) onConfigSelected;
 
   const ServerBottomSheet({
-    Key? key,
+    super.key,
     required this.configs,
     required this.selectedConfig,
     required this.isConnecting,
     required this.onConfigSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<ServerBottomSheet> createState() => _ServerBottomSheetState();

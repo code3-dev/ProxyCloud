@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,12 +25,12 @@ class ServerSelectionScreen extends StatefulWidget {
   final Future<void> Function(V2RayConfig) onConfigSelected;
 
   const ServerSelectionScreen({
-    Key? key,
+    super.key,
     required this.configs,
     required this.selectedConfig,
     required this.isConnecting,
     required this.onConfigSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<ServerSelectionScreen> createState() => _ServerSelectionScreenState();
@@ -40,9 +43,6 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
   final V2RayService _v2rayService = V2RayService();
   final StreamController<String> _autoConnectStatusStream =
       StreamController<String>.broadcast();
-  
-  // Add the missing _originalOrder field
-  List<V2RayConfig> _originalOrder = [];
 
   /// Get ping batch size from shared preferences (increased default for faster testing)
   Future<int> _getPingBatchSize() async {
@@ -279,21 +279,6 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
     super.dispose();
   }
 
-  Map<String, List<V2RayConfig>> _groupConfigsByHost(
-    List<V2RayConfig> configs,
-  ) {
-    final Map<String, List<V2RayConfig>> groupedConfigs = {};
-    for (var config in configs) {
-      // Use config.id as the key to ensure each config is treated individually
-      final key = config.id;
-      if (!groupedConfigs.containsKey(key)) {
-        groupedConfigs[key] = [];
-      }
-      groupedConfigs[key]!.add(config);
-    }
-    return groupedConfigs;
-  }
-
   Future<void> _loadPingForConfig(
     V2RayConfig config,
     List<V2RayConfig> relatedConfigs,
@@ -356,29 +341,6 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
         // Save pings to storage after each ping operation
         await _savePingsToStorage();
       }
-    }
-  }
-
-  Future<int> _pingServer(V2RayConfig config) async {
-    try {
-      // Check if task was cancelled or widget unmounted
-      if (_cancelPingTasks[config.id] == true || !mounted) {
-        return -1;
-      }
-
-      final delay = await _v2rayService
-          .getServerDelay(config)
-          .timeout(
-            const Duration(seconds: 8), // Reduced timeout for better UX
-            onTimeout: () {
-              debugPrint('Ping timeout for server ${config.remark}');
-              return -1; // Return -1 on timeout
-            },
-          );
-      return delay ?? -1; // Handle null case by returning -1
-    } catch (e) {
-      debugPrint('Error pinging server ${config.remark}: $e');
-      return -1; // Return -1 on error
     }
   }
 
@@ -464,7 +426,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
 
         // Very small delay between batches to avoid overwhelming the system
         if (mounted && i + batchSize < configsToPing.length) {
-          await Future.delayed(const Duration(milliseconds: 50)); // Reduced delay
+          await Future.delayed(
+            const Duration(milliseconds: 50),
+          ); // Reduced delay
         }
       }
 
@@ -659,109 +623,6 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
     }
   }
 
-  // New helper method to ping a single server and return the result
-  Future<int> _processBatchPingTask(V2RayConfig config) async {
-    // Early return if widget unmounted
-    if (!mounted || _cancelPingTasks[config.id] == true) {
-      return -1;
-    }
-
-    try {
-      // Ping the server with timeout
-      int ping;
-      try {
-        final result = await _pingServer(config).timeout(
-          const Duration(seconds: 8),
-          onTimeout: () {
-            debugPrint('Ping task timeout for server ${config.remark}');
-            return -1; // Return -1 on timeout
-          },
-        );
-        ping = result;
-      } catch (e) {
-        if (e.toString().contains('timeout')) {
-          debugPrint('Timeout in ping task for ${config.remark}: $e');
-        } else {
-          debugPrint('Error pinging server in task ${config.remark}: $e');
-        }
-        ping = -1; // Return -1 on error
-      }
-
-      return ping;
-    } catch (e) {
-      debugPrint(
-        'Unexpected error in _processBatchPingTask for ${config.remark}: $e',
-      );
-      return -1;
-    }
-  }
-
-  Future<void> _pingAllConfigs() async {
-    setState(() {
-      _isPingingAllServers = true;
-    });
-
-    try {
-      // Clear existing pings when starting new test
-      setState(() {
-        _pings.clear();
-      });
-
-      // Get the batch size from settings
-      final int batchSize = await _getPingBatchSize();
-      debugPrint('Using ping batch size: $batchSize');
-
-      // Filter configs to only include non-connected configs
-      final configsToPing = widget.configs
-          .where((config) => config.id != widget.selectedConfig?.id)
-          .toList();
-
-      // Process configs in batches
-      for (int i = 0; i < configsToPing.length; i += batchSize) {
-        if (!mounted) break;
-
-        final endIndex = (i + batchSize < configsToPing.length)
-            ? i + batchSize
-            : configsToPing.length;
-        final batch = configsToPing.sublist(i, endIndex);
-
-        // Ping all configs in the batch in parallel
-        final futures = <Future<void>>[];
-        for (final config in batch) {
-          if (!mounted) break;
-          futures.add(_loadPingForConfig(config, [config]));
-        }
-
-        // Wait for all configs in the batch to complete
-        await Future.wait(futures);
-
-        // Small delay between batches to avoid overwhelming the system
-        if (mounted && i + batchSize < configsToPing.length) {
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
-      }
-
-      // Save all pings to storage after completing all batches
-      await _savePingsToStorage();
-    } catch (e) {
-      debugPrint('Error in ping all operation: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error testing all servers: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isPingingAllServers = false;
-        });
-      }
-    }
-  }
-
   void _cancelAllPingTasks() {
     _cancelPingTasks.updateAll((key, value) => true);
   }
@@ -838,23 +699,25 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       final allSubscriptionConfigIds = subscriptions
           .expand((sub) => sub.configIds)
           .toSet();
-      
+
       // Debug print to see what's happening
-      debugPrint('Local tab filtering: Total configs: ${configs.length}, Subscription config IDs: ${allSubscriptionConfigIds.length}');
+      debugPrint(
+        'Local tab filtering: Total configs: ${configs.length}, Subscription config IDs: ${allSubscriptionConfigIds.length}',
+      );
       debugPrint('Subscription config IDs: $allSubscriptionConfigIds');
-      
-      filteredConfigs = configs
-          .where((config) {
-            final isLocal = !allSubscriptionConfigIds.contains(config.id);
-            if (!isLocal) {
-              debugPrint('Config ${config.remark} (${config.id}) is NOT local (belongs to subscription)');
-            } else {
-              debugPrint('Config ${config.remark} (${config.id}) IS local');
-            }
-            return isLocal;
-          })
-          .toList();
-      
+
+      filteredConfigs = configs.where((config) {
+        final isLocal = !allSubscriptionConfigIds.contains(config.id);
+        if (!isLocal) {
+          debugPrint(
+            'Config ${config.remark} (${config.id}) is NOT local (belongs to subscription)',
+          );
+        } else {
+          debugPrint('Config ${config.remark} (${config.id}) IS local');
+        }
+        return isLocal;
+      }).toList();
+
       debugPrint('Local tab showing ${filteredConfigs.length} configs');
     } else {
       final subscription = subscriptions.firstWhere(
@@ -870,13 +733,13 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
       filteredConfigs = configs
           .where((config) => subscription.configIds.contains(config.id))
           .toList();
-      debugPrint('Subscription tab "${_selectedFilter}": showing ${filteredConfigs.length} configs');
+      debugPrint(
+        'Subscription tab "$_selectedFilter": showing ${filteredConfigs.length} configs',
+      );
     }
 
     // Store original order when not sorting
-    if (!_sortByPing) {
-      _originalOrder = List.from(filteredConfigs);
-    }
+    if (!_sortByPing) {}
 
     // Sort configs by ping if enabled
     if (_sortByPing) {
@@ -924,82 +787,89 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
               builder: (context, provider, _) {
                 return IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: provider.isUpdatingSubscriptions ? null : () async {
-                    try {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            context.tr(
-                              TranslationKeys.serverSelectionUpdatingServers,
-                            ),
-                          ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-
-                      // Clear saved pings when updating subscriptions
-                      await _clearSavedPings();
-                      _pings.clear();
-                      if (mounted) {
-                        setState(() {});
-                      }
-
-                      if (_selectedFilter == 'All') {
-                        await provider.updateAllSubscriptions();
-                      } else if (_selectedFilter != 'Default') {
-                        final subscription = subscriptions.firstWhere(
-                          (sub) => sub.name == _selectedFilter,
-                          orElse: () => Subscription(
-                            id: '',
-                            name: '',
-                            url: '',
-                            lastUpdated: DateTime.now(),
-                            configIds: [],
-                          ),
-                        );
-                        if (subscription.id.isNotEmpty) {
-                          await provider.updateSubscription(subscription);
-                        }
-                      }
-
-                      setState(() {});
-                      // Ping all servers in current tab after refresh
-                      await _pingAllServersInBatches();
-
-                      if (provider.errorMessage.isNotEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(provider.errorMessage),
-                            backgroundColor: Colors.red.shade700,
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
-                        provider.clearError();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              context.tr(
-                                TranslationKeys.serverSelectionServersUpdated,
+                  onPressed: provider.isUpdatingSubscriptions
+                      ? null
+                      : () async {
+                          try {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  context.tr(
+                                    TranslationKeys
+                                        .serverSelectionUpdatingServers,
+                                  ),
+                                ),
+                                duration: const Duration(seconds: 1),
                               ),
-                            ),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            context.tr(
-                              TranslationKeys.serverSelectionErrorUpdating,
-                              parameters: {'error': e.toString()},
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  tooltip: context.tr(TranslationKeys.serverSelectionUpdateServers),
+                            );
+
+                            // Clear saved pings when updating subscriptions
+                            await _clearSavedPings();
+                            _pings.clear();
+                            if (mounted) {
+                              setState(() {});
+                            }
+
+                            if (_selectedFilter == 'All') {
+                              await provider.updateAllSubscriptions();
+                            } else if (_selectedFilter != 'Default') {
+                              final subscription = subscriptions.firstWhere(
+                                (sub) => sub.name == _selectedFilter,
+                                orElse: () => Subscription(
+                                  id: '',
+                                  name: '',
+                                  url: '',
+                                  lastUpdated: DateTime.now(),
+                                  configIds: [],
+                                ),
+                              );
+                              if (subscription.id.isNotEmpty) {
+                                await provider.updateSubscription(subscription);
+                              }
+                            }
+
+                            setState(() {});
+                            // Ping all servers in current tab after refresh
+                            await _pingAllServersInBatches();
+
+                            if (provider.errorMessage.isNotEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(provider.errorMessage),
+                                  backgroundColor: Colors.red.shade700,
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                              provider.clearError();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.tr(
+                                      TranslationKeys
+                                          .serverSelectionServersUpdated,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  context.tr(
+                                    TranslationKeys
+                                        .serverSelectionErrorUpdating,
+                                    parameters: {'error': e.toString()},
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                  tooltip: context.tr(
+                    TranslationKeys.serverSelectionUpdateServers,
+                  ),
                 );
               },
             ),
@@ -1050,11 +920,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.cloud_off,
-                          size: 48,
-                          color: Colors.grey,
-                        ),
+                        Icon(Icons.cloud_off, size: 48, color: Colors.grey),
                         const SizedBox(height: 16),
                         Text(
                           context.tr(
@@ -1072,12 +938,12 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                             ),
                             child: Text(
                               context.tr(
-                                TranslationKeys.serverSelectionImportFromClipboard,
+                                TranslationKeys
+                                    .serverSelectionImportFromClipboard,
                               ),
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
-
                       ],
                     ),
                   )
@@ -1474,8 +1340,9 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen> {
                                               vertical: 2,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.blueGrey
-                                                  .withValues(alpha: 0.2),
+                                              color: Colors.blueGrey.withValues(
+                                                alpha: 0.2,
+                                              ),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),

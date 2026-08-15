@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:proxycloud/models/v2ray_config.dart';
 import 'package:proxycloud/services/v2ray_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,7 +55,9 @@ class AutoSelectUtil {
       debugPrint('Using auto-select batch size: $batchSize');
 
       // Notify about starting
-      onStatusUpdate?.call('Testing ${configs.length} servers in batches of $batchSize...');
+      onStatusUpdate?.call(
+        'Testing ${configs.length} servers in batches of $batchSize...',
+      );
 
       // Variables to track the best server found so far
       V2RayConfig? selectedConfig;
@@ -70,8 +73,11 @@ class AutoSelectUtil {
 
         // Determine how many servers to test in this batch
         final int serversToTest = min(batchSize, configs.length - testedOffset);
-        final int actualServersToTest = max(1, serversToTest); // Ensure at least 1
-        
+        final int actualServersToTest = max(
+          1,
+          serversToTest,
+        ); // Ensure at least 1
+
         // Get the configs for this batch
         final List<V2RayConfig> batchConfigs = configs.sublist(
           testedOffset,
@@ -79,7 +85,9 @@ class AutoSelectUtil {
         );
 
         // Notify about current batch
-        onStatusUpdate?.call('Testing batch ${testedOffset ~/ batchSize + 1}: ${batchConfigs.length} servers...');
+        onStatusUpdate?.call(
+          'Testing batch ${testedOffset ~/ batchSize + 1}: ${batchConfigs.length} servers...',
+        );
 
         // Ping all configs in the batch in parallel with optimized settings
         final futures = <Future<MapEntry<V2RayConfig, int?>>>[];
@@ -88,7 +96,7 @@ class AutoSelectUtil {
           if (cancellationToken?.isCancelled == true) {
             return AutoSelectResult(errorMessage: 'Auto-select cancelled');
           }
-          
+
           futures.add(
             v2rayService
                 .getServerDelay(config, cancellationToken: cancellationToken)
@@ -97,16 +105,15 @@ class AutoSelectUtil {
         }
 
         // Wait for all configs in the batch to complete with shorter timeout
-        final List<MapEntry<V2RayConfig, int?>> results = await Future.wait(
-          futures,
-        ).timeout(
-          const Duration(seconds: 6), // Reduced timeout for faster response
-          onTimeout: () {
-            // Handle timeout case
-            debugPrint('Auto-select batch timeout');
-            return []; // Return empty list on timeout
-          },
-        );
+        final List<MapEntry<V2RayConfig, int?>> results =
+            await Future.wait(futures).timeout(
+              const Duration(seconds: 6), // Reduced timeout for faster response
+              onTimeout: () {
+                // Handle timeout case
+                debugPrint('Auto-select batch timeout');
+                return []; // Return empty list on timeout
+              },
+            );
 
         // Process results and find the best server in this batch
         for (final result in results) {
@@ -121,15 +128,17 @@ class AutoSelectUtil {
           // Update status with current result
           if (delay != null && delay >= 0) {
             onStatusUpdate?.call('✓ ${config.remark}: ${delay}ms');
-            
+
             // Check if this is the best server so far
             if (delay < (bestPing ?? 10000)) {
               selectedConfig = config;
               bestPing = delay;
-              
+
               // If we found a very fast server (< 100ms), we can stop early for maximum speed
               if (delay < 100) {
-                onStatusUpdate?.call('Found very fast server (${delay}ms), stopping early...');
+                onStatusUpdate?.call(
+                  'Found very fast server (${delay}ms), stopping early...',
+                );
                 break;
               }
             }
@@ -140,7 +149,9 @@ class AutoSelectUtil {
 
         // Early exit if we found a good server
         if (selectedConfig != null && (bestPing ?? 10000) < 200) {
-          onStatusUpdate?.call('Found good server (${bestPing}ms), stopping batch testing...');
+          onStatusUpdate?.call(
+            'Found good server (${bestPing}ms), stopping batch testing...',
+          );
           break;
         }
 

@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/v2ray_config.dart';
 import '../providers/v2ray_provider.dart';
 import '../providers/language_provider.dart';
@@ -7,10 +10,9 @@ import '../utils/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../screens/server_selection_screen.dart';
 import '../services/wallpaper_service.dart';
-import 'error_snackbar.dart';
 
 class ServerSelector extends StatelessWidget {
-  const ServerSelector({Key? key}) : super(key: key);
+  const ServerSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class ServerSelector extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isGlassBackground
-          ? AppTheme.surfaceCard.withOpacity(0.7)
+          ? AppTheme.surfaceCard.withValues(alpha: 0.7)
           : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -117,7 +119,7 @@ class ServerSelector extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isGlassBackground
-                      ? AppTheme.surfaceContainer.withOpacity(0.7)
+                      ? AppTheme.surfaceContainer.withValues(alpha: 0.7)
                       : AppTheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.surfaceCard),
@@ -198,7 +200,7 @@ class _LoadingServerCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isGlassBackground
-          ? AppTheme.surfaceCard.withOpacity(0.7)
+          ? AppTheme.surfaceCard.withValues(alpha: 0.7)
           : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -213,50 +215,54 @@ class _LoadingServerCard extends StatelessWidget {
               Consumer<V2RayProvider>(
                 builder: (context, provider, _) {
                   return TextButton(
-                    onPressed: provider.isUpdatingSubscriptions ? null : () async {
-                      final v2rayProvider = Provider.of<V2RayProvider>(
-                        context,
-                        listen: false,
-                      );
-                      try {
-                        // Show loading indicator
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              context.tr('home.updating_subscriptions'),
-                            ),
-                          ),
-                        );
+                    onPressed: provider.isUpdatingSubscriptions
+                        ? null
+                        : () async {
+                            final v2rayProvider = Provider.of<V2RayProvider>(
+                              context,
+                              listen: false,
+                            );
+                            try {
+                              // Show loading indicator
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.tr('home.updating_subscriptions'),
+                                  ),
+                                ),
+                              );
 
-                        // Update all subscriptions instead of just fetching servers
-                        await v2rayProvider.updateAllSubscriptions();
-                        v2rayProvider.fetchNotificationStatus();
+                              // Update all subscriptions instead of just fetching servers
+                              await v2rayProvider.updateAllSubscriptions();
+                              v2rayProvider.fetchNotificationStatus();
 
-                        // Show success message
-                        if (v2rayProvider.errorMessage.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                context.tr('home.subscriptions_updated'),
-                              ),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(v2rayProvider.errorMessage)),
-                          );
-                          v2rayProvider.clearError();
-                        }
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '${context.tr(TranslationKeys.serverSelectorErrorRefreshing)}: ${e.toString()}',
-                            ),
-                          ),
-                        );
-                      }
-                    },
+                              // Show success message
+                              if (v2rayProvider.errorMessage.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      context.tr('home.subscriptions_updated'),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(v2rayProvider.errorMessage),
+                                  ),
+                                );
+                                v2rayProvider.clearError();
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${context.tr(TranslationKeys.serverSelectorErrorRefreshing)}: ${e.toString()}',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                     child: Text(context.tr(TranslationKeys.commonRefresh)),
                   );
                 },
@@ -280,7 +286,7 @@ class _EmptyServerCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: isGlassBackground
-          ? AppTheme.surfaceCard.withOpacity(0.7)
+          ? AppTheme.surfaceCard.withValues(alpha: 0.7)
           : AppTheme.cardDark,
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -319,7 +325,9 @@ class _EmptyServerCard extends StatelessWidget {
                           backgroundColor: AppTheme.primaryGreen,
                         ),
                         child: Text(
-                          context.tr(TranslationKeys.serverSelectionImportFromClipboard),
+                          context.tr(
+                            TranslationKeys.serverSelectionImportFromClipboard,
+                          ),
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),

@@ -1,10 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class WallpaperService extends ChangeNotifier {
@@ -101,7 +101,7 @@ class WallpaperService extends ChangeNotifier {
     }
 
     await _saveWallpaperSettings(null, false);
-    
+
     // Clean up any remaining old wallpapers
     await cleanupAllOldWallpapers();
   }
@@ -192,7 +192,7 @@ class WallpaperService extends ChangeNotifier {
     try {
       // Clear cached network images to free up space
       await clearCachedImages();
-      
+
       final Directory appDir = await getApplicationDocumentsDirectory();
       final String wallpapersDir = '${appDir.path}/wallpapers';
       final Directory wallpaperDirectory = Directory(wallpapersDir);
@@ -214,15 +214,19 @@ class WallpaperService extends ChangeNotifier {
           await entity.delete(recursive: true);
         }
       }
-      
+
       // Also clean up any loose wallpaper files in the app directory (legacy)
-      final List<FileSystemEntity> appDirContents = await appDir.list().toList();
+      final List<FileSystemEntity> appDirContents = await appDir
+          .list()
+          .toList();
       for (final FileSystemEntity entity in appDirContents) {
         if (entity is File) {
           final String fileName = entity.path.split('/').last;
-          if (fileName.startsWith('wallpaper_') && 
-              (fileName.endsWith('.jpg') || fileName.endsWith('.png') || 
-               fileName.endsWith('.jpeg') || fileName.endsWith('.gif'))) {
+          if (fileName.startsWith('wallpaper_') &&
+              (fileName.endsWith('.jpg') ||
+                  fileName.endsWith('.png') ||
+                  fileName.endsWith('.jpeg') ||
+                  fileName.endsWith('.gif'))) {
             // Only delete if it's not the current wallpaper
             if (_wallpaperPath == null || entity.path != _wallpaperPath) {
               await entity.delete();
@@ -242,7 +246,7 @@ class WallpaperService extends ChangeNotifier {
     try {
       // Clean up old wallpapers before setting new one
       await cleanupAllOldWallpapers();
-      
+
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

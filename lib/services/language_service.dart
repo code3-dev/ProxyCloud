@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/app_language.dart';
 
 class LanguageService {

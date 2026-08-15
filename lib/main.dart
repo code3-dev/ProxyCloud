@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'providers/telegram_proxy_provider.dart';
 import 'providers/v2ray_provider.dart';
 import 'providers/language_provider.dart';
@@ -10,6 +11,7 @@ import 'screens/main_navigation_screen.dart';
 import 'screens/privacy_welcome_screen.dart';
 import 'services/update_service.dart';
 import 'theme/app_theme.dart';
+
 import 'dart:async';
 
 void main() async {

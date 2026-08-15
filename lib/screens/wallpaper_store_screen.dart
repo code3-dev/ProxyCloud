@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -11,7 +13,7 @@ import '../theme/app_theme.dart';
 import '../utils/app_localizations.dart';
 
 class WallpaperStoreScreen extends StatefulWidget {
-  const WallpaperStoreScreen({Key? key}) : super(key: key);
+  const WallpaperStoreScreen({super.key});
 
   @override
   State<WallpaperStoreScreen> createState() => _WallpaperStoreScreenState();
@@ -86,7 +88,7 @@ class _WallpaperStoreScreenState extends State<WallpaperStoreScreen> {
       final String fileName = url.split('/').last;
 
       // Invoke the Android Download Manager
-      final String downloadId = await platform.invokeMethod('downloadFile', {
+      await platform.invokeMethod('downloadFile', {
         'url': url,
         'fileName': fileName,
       });
@@ -381,16 +383,13 @@ class _WallpaperItem extends StatelessWidget {
 class FullScreenImageViewer extends StatefulWidget {
   final String imageUrl;
 
-  const FullScreenImageViewer({Key? key, required this.imageUrl})
-    : super(key: key);
+  const FullScreenImageViewer({super.key, required this.imageUrl});
 
   @override
   State<FullScreenImageViewer> createState() => _FullScreenImageViewerState();
 }
 
 class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
-  late Future<void> _downloadFuture;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -448,7 +447,7 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
       final String fileName = url.split('/').last;
 
       // Invoke the Android Download Manager
-      final String downloadId = await platform.invokeMethod('downloadFile', {
+      await platform.invokeMethod('downloadFile', {
         'url': url,
         'fileName': fileName,
       });

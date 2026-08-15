@@ -1,11 +1,15 @@
+// ignore_for_file: unused_local_variable, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'dart:async';
+
 import '../theme/app_theme.dart';
 import '../utils/app_localizations.dart';
 
 class HostCheckerScreen extends StatefulWidget {
-  const HostCheckerScreen({Key? key}) : super(key: key);
+  const HostCheckerScreen({super.key});
 
   @override
   State<HostCheckerScreen> createState() => _HostCheckerScreenState();
@@ -326,7 +330,7 @@ class _HostCheckerScreenState extends State<HostCheckerScreen> {
                 SizedBox(
                   width: 120,
                   child: DropdownButtonFormField<int>(
-                    value: _timeoutSeconds,
+                    initialValue: _timeoutSeconds,
                     decoration: InputDecoration(
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
@@ -386,7 +390,7 @@ class _HostCheckerScreenState extends State<HostCheckerScreen> {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        disabledBackgroundColor: AppTheme.primaryBlue.withOpacity(0.5),
+        disabledBackgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.5),
       ),
       child: _isLoading
           ? const SizedBox(
@@ -506,8 +510,8 @@ class _HostCheckerScreenState extends State<HostCheckerScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isSuccess
-                        ? Colors.green.withOpacity(0.1)
-                        : Colors.red.withOpacity(0.1),
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
