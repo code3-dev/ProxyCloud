@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_v2ray_client/flutter_v2ray.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/v2ray_config.dart';
 import '../models/subscription.dart';
 import '../services/v2ray_service.dart';
@@ -1128,8 +1129,7 @@ class V2RayProvider with ChangeNotifier, WidgetsBindingObserver {
       final subscription = Subscription(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
-        url:
-            'file://subscription', // Special indicator for file-based subscriptions
+        url: 'file://subscription', // Special indicator for file-based subscriptions
         lastUpdated: DateTime.now(),
         configIds: newConfigIds,
       );

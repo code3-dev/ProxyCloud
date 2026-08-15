@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../theme/app_theme.dart';
 import 'main_navigation_screen.dart';
 import '../utils/app_localizations.dart';
@@ -22,8 +23,7 @@ class PrivacyWelcomeScreen extends StatefulWidget {
 class _PrivacyWelcomeScreenState extends State<PrivacyWelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages =
-      7; // Reduced to remove background access page, now accommodating channels, sponsors, and Persian Gulf pages
+  final int _totalPages = 7; // Reduced to remove background access page, now accommodating channels, sponsors, and Persian Gulf pages
   bool _acceptedPrivacy = false;
 
   AppLanguage? _selectedLanguage;

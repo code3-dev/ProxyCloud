@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../providers/language_provider.dart';
 import '../utils/app_localizations.dart';
 
@@ -104,9 +105,8 @@ class AboutScreen extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  color: Theme.of(context).colorScheme.outline
+                      .withValues(alpha: 0.2),
                 ),
               ),
               child: Text(

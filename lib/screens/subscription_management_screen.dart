@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: unnecessary_null_comparison, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -39,11 +39,11 @@ class _SubscriptionManagementScreenState
         allowedExtensions: ['txt', 'json', 'yaml', 'yml'],
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (result == null || result.isEmpty) {
         return;
       }
 
-      final file = File(result.files.single.path!);
+      final file = File(result.single.path!);
       final content = await file.readAsString();
 
       // Parse the content as subscription configs

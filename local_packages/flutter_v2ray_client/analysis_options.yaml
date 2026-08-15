@@ -9,6 +9,10 @@ analyzer:
     - ios/**
     - example/ios/Flutter/App.framework/**
     - example/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:

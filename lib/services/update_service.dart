@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:proxycloud/models/app_update.dart';
+
 import '../utils/app_localizations.dart';
 
 class UpdateService {

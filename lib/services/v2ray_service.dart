@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter_v2ray_client/flutter_v2ray.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1122,9 +1123,8 @@ class V2RayService extends ChangeNotifier {
 
       for (final config in configs) {
         futures.add(
-          _pingSingleServerFast(
-            config,
-          ).then((delay) => MapEntry(config.id, delay)),
+          _pingSingleServerFast(config)
+              .then((delay) => MapEntry(config.id, delay)),
         );
       }
 
